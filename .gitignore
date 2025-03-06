@@ -1,0 +1,32 @@
+# Virtual environment (prevents uploading venv)
+venv/
+env/
+
+# Byte-compiled / cached files
+__pycache__/
+*.pyc
+*.pyo
+
+# Pygame cache files (if any)
+*.log
+
+# OS-specific files
+.DS_Store  # macOS
+Thumbs.db  # Windows
+
+# IDE/editor files
+.vscode/
+.idea/
+*.sublime-workspace
+
+# Dependencies (if using a package manager other than requirements.txt)
+Pipfile
+Pipfile.lock
+
+# Generated reports (optional)
+*.csv
+*.json
+
+# Git Ignore for Logs & Debug files (optional)
+logs/
+debug.log

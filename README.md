@@ -37,8 +37,7 @@ PacMazeGame/
 ## 🛠 Installation & Setup
 ### **1️⃣ Clone the Repository**
 ```bash
-git clone https://github.com/yourusername/PacMazeGame.git
-cd PacMazeGame
+git clone https://github.com/justshfarida/Pac-man.git
 ```
 
 ### **2️⃣ Set Up Virtual Environment**

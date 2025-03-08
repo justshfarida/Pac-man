@@ -7,18 +7,22 @@ from utils.settings import SCREEN_WIDTH, SCREEN_HEIGHT, BLACK
 # Initialize Pygame
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+timer=pygame.time.Clock() # controls game speed
+fps=60 # frames per second
 pygame.display.set_caption("Pac-Man Pathfinding")
+font=pygame.font.Font("freesansbold.ttf", 20)
 
 # Game Objects
 maze = Maze()
-pacman = Pacman(50, 50)
+pacman = Pacman(450, 663)
 ghosts = [Ghost(200, 200, "BFS"), Ghost(300, 300, "DFS"), Ghost(400, 400, "A*")]
 
 # Game Loop
 run = True
 while run:
+    timer.tick(fps)
     screen.fill(BLACK)
-
+    
     # Draw maze
     maze.draw(screen)
 

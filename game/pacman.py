@@ -2,54 +2,64 @@ import pygame
 from utils.settings import YELLOW
 
 class Pacman:
-    def __init__(self, x, y):
+    def __init__(self, x, y, maze):
         self.x = x
         self.y = y
-        self.speed = 3  # Adjusted speed for smoother movement
+        self.maze = maze
+        self.speed = 2  
         self.direction = 0  # 0: RIGHT, 1: LEFT, 2: UP, 3: DOWN
-        self.counter = 0  # Animation frame counter
+        self.direction_command = 0  
+        self.counter = 0  
+        self.centerx = x + 23
+        self.centery = y + 24
+        self.turns = [False, False, False, False]  # Ensure it's always initialized
 
         # Load Pac-Man images (animation frames)
         self.player_images = []
-        for i in range(1, 5):  # Load frames 1.png to 4.png
+        for i in range(1, 5):  
             image = pygame.image.load(f'./assets/player_images/{i}.png')
             self.player_images.append(pygame.transform.scale(image, (45, 45)))
 
-        # Create a rect for collision detection
-        self.rect = pygame.Rect(self.x, self.y, 45, 45)
-
     def move(self):
-        """Handles player movement & direction tracking."""
-        keys = pygame.key.get_pressed()
+        """Moves Pac-Man in the allowed direction."""
+        self.centerx = self.x + 23
+        self.centery = self.y + 24
 
-        if keys[pygame.K_a] or keys[pygame.K_LEFT]:  # Move left
-            self.rect.x -= self.speed
-            self.direction = 1
-        if keys[pygame.K_d] or keys[pygame.K_RIGHT]:  # Move right
-            self.rect.x += self.speed
-            self.direction = 0
-        if keys[pygame.K_w] or keys[pygame.K_UP]:  # Move up
-            self.rect.y -= self.speed
-            self.direction = 2
-        if keys[pygame.K_s] or keys[pygame.K_DOWN]:  # Move down
-            self.rect.y += self.speed
-            self.direction = 3
+        # Check allowed movements
+        self.turns = self.maze.check_position(self.centerx, self.centery, self.direction_command)
 
-        # Update position
-        self.x, self.y = self.rect.x, self.rect.y
+        # ✅ Update direction if movement is allowed
+        if self.turns[self.direction_command]:  
+            self.direction = self.direction_command
 
-        # Cycle through animation frames
-        self.counter = (self.counter + 1) % 20  # Loops between 0-19
+        # ✅ Move Pac-Man
+        if self.direction == 0 and self.turns[0]:  # RIGHT
+            self.x += self.speed
+        elif self.direction == 1 and self.turns[1]:  # LEFT
+            self.x -= self.speed
+        elif self.direction == 2 and self.turns[2]:  # UP
+            self.y -= self.speed
+        elif self.direction == 3 and self.turns[3]:  # DOWN
+            self.y += self.speed
+
+        # ✅ Handle teleporting at edges
+        if self.x > 900:
+            self.x = -47
+        if self.x < -50:
+            self.x = 897
 
     def draw(self, screen):
         """Draws the animated Pac-Man sprite with direction adjustments."""
-        frame_index = (self.counter // 5) % 4  # Switches between 4 frames
 
-        if self.direction == 0:  # RIGHT
+        # Update animation frame
+        self.counter = (self.counter + 1) % 20  
+        frame_index = (self.counter // 5) % 4  
+
+        if self.direction == 0:  
             screen.blit(self.player_images[frame_index], (self.x, self.y))
-        elif self.direction == 1:  # LEFT
+        elif self.direction == 1:  
             screen.blit(pygame.transform.flip(self.player_images[frame_index], True, False), (self.x, self.y))
-        elif self.direction == 2:  # UP
+        elif self.direction == 2:  
             screen.blit(pygame.transform.rotate(self.player_images[frame_index], 90), (self.x, self.y))
-        elif self.direction == 3:  # DOWN
+        elif self.direction == 3: 
             screen.blit(pygame.transform.rotate(self.player_images[frame_index], 270), (self.x, self.y))

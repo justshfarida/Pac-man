@@ -77,9 +77,39 @@ class Maze:
                             pygame.draw.arc(screen, LINE_COLOR, [(col*self.tile_width-(self.tile_width*0.4))-2, (row*self.tile_height-(self.tile_height*0.4)), self.tile_width, self.tile_height] ,3*PI/2,2*PI, 3)
 
                         elif self.grid[row][col] == 9: #door for ghosts
-                             pygame.draw.line(screen, LINE_COLOR, (col*self.tile_width,center_y), (col*self.tile_width+self.tile_width, center_y) ,3)
+                             pygame.draw.line(screen, WHITE, (col*self.tile_width,center_y), (col*self.tile_width+self.tile_width, center_y) ,3)
 
+    def check_position(self, x, y, direction):
+        """Checks if Pac-Man can move in a given direction (0: Right, 1: Left, 2: Up, 3: Down)."""
+        turns = [False, False, False, False]  # Default: All directions blocked
+        fudge_factor = 15  # Small adjustment for smooth movement
 
+        grid_x = x // self.tile_width
+        grid_y = y // self.tile_height
 
-        
-        
+        # Ensure we do not go out of grid bounds
+        max_x = len(self.grid[0]) - 1
+        max_y = len(self.grid) - 1
+
+        if 0 <= grid_x <= max_x and 0 <= grid_y <= max_y:
+            # Right movement (0)
+            if direction == 0 and grid_x + 1 <= max_x:
+                if self.grid[grid_y][grid_x + 1] < 3:
+                    turns[0] = True
+
+            # Left movement (1)
+            if direction == 1 and grid_x - 1 >= 0:
+                if self.grid[grid_y][grid_x - 1] < 3:
+                    turns[1] = True
+
+            # Up movement (2)
+            if direction == 2 and grid_y - 1 >= 0:
+                if self.grid[grid_y - 1][grid_x] < 3:
+                    turns[2] = True
+
+            # Down movement (3)
+            if direction == 3 and grid_y + 1 <= max_y:
+                if self.grid[grid_y + 1][grid_x] < 3:
+                    turns[3] = True
+
+        return turns  # Return valid movement directions

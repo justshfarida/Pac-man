@@ -5,7 +5,7 @@ class Maze:
     def __init__(self):
         self.tile_height=(SCREEN_HEIGHT-50)//32
         self.tile_width=SCREEN_WIDTH//30  
-        self.flicker_counter = 0  # Tracks flickering effect
+        self.flicker_counter = 0  #Tracks flickering effect
 
         self.grid = [
 [6, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5],
@@ -56,7 +56,7 @@ class Maze:
                         if self.grid[row][col] == 1: #for dot
                             pygame.draw.circle(screen, WHITE, (center_x, center_y),  4 ) #centering dot
                         elif self.grid[row][col] == 2: #for big dot
-                                 if self.flicker_counter < 3:  # Show for 3 frames, hide for 3 frames
+                                 if self.flicker_counter < 3: 
                                     pygame.draw.circle(screen, WHITE, (center_x, center_y), 10)
 
                         elif self.grid[row][col] == 3: #straight vertical line
@@ -79,37 +79,51 @@ class Maze:
                         elif self.grid[row][col] == 9: #door for ghosts
                              pygame.draw.line(screen, WHITE, (col*self.tile_width,center_y), (col*self.tile_width+self.tile_width, center_y) ,3)
 
-    def check_position(self, x, y, direction):
-        """Checks if Pac-Man can move in a given direction (0: Right, 1: Left, 2: Up, 3: Down)."""
-        turns = [False, False, False, False]  # Default: All directions blocked
+    def check_position(self, centerx, centery, direction):
+        turns = [False, False, False, False]  # Default: No movement allowed
+        tile_height = (SCREEN_HEIGHT - 50) // 32
+        tile_width = SCREEN_WIDTH // 30
         fudge_factor = 15  # Small adjustment for smooth movement
 
-        grid_x = x // self.tile_width
-        grid_y = y // self.tile_height
+        if centerx // tile_width < 29:
+            if direction == 0:  # Moving right
+                if self.grid[centery // tile_height][(centerx - fudge_factor) // tile_width] < 3:
+                    turns[1] = True  # Left allowed
+            if direction == 1:  # Moving left
+                if self.grid[centery // tile_height][(centerx + fudge_factor) // tile_width] < 3:
+                    turns[0] = True  # Right allowed
+            if direction == 2:  # Moving up
+                if self.grid[(centery + fudge_factor) // tile_height][centerx // tile_width] < 3:
+                    turns[3] = True  # Down allowed
+            if direction == 3:  # Moving down
+                if self.grid[(centery - fudge_factor) // tile_height][centerx // tile_width] < 3:
+                    turns[2] = True  # Up allowed
 
-        # Ensure we do not go out of grid bounds
-        max_x = len(self.grid[0]) - 1
-        max_y = len(self.grid) - 1
+            if direction in [2, 3]:  # Vertical movement
+                if 12 <= centerx % tile_width <= 18:
+                    if self.grid[(centery + fudge_factor) // tile_height][centerx // tile_width] < 3:
+                        turns[3] = True  # Down
+                    if self.grid[(centery - fudge_factor) // tile_height][centerx // tile_width] < 3:
+                        turns[2] = True  # Up
+                if 12 <= centery % tile_height <= 18:
+                    if self.grid[centery // tile_height][(centerx - tile_width) // tile_width] < 3:
+                        turns[1] = True  # Left
+                    if self.grid[centery // tile_height][(centerx + tile_width) // tile_width] < 3:
+                        turns[0] = True  # Right
 
-        if 0 <= grid_x <= max_x and 0 <= grid_y <= max_y:
-            # Right movement (0)
-            if direction == 0 and grid_x + 1 <= max_x:
-                if self.grid[grid_y][grid_x + 1] < 3:
-                    turns[0] = True
+            if direction in [0, 1]:  # Horizontal movement
+                if 12 <= centerx % tile_width <= 18:
+                    if self.grid[(centery + tile_height) // tile_height][centerx // tile_width] < 3:
+                        turns[3] = True  # Down
+                    if self.grid[(centery - tile_height) // tile_height][centerx // tile_width] < 3:
+                        turns[2] = True  # Up
+                if 12 <= centery % tile_height <= 18:
+                    if self.grid[centery // tile_height][(centerx - fudge_factor) // tile_width] < 3:
+                        turns[1] = True  # Left
+                    if self.grid[centery // tile_height][(centerx + fudge_factor) // tile_width] < 3:
+                        turns[0] = True  # Right
+        else:
+            turns[0] = True  
+            turns[1] = True
 
-            # Left movement (1)
-            if direction == 1 and grid_x - 1 >= 0:
-                if self.grid[grid_y][grid_x - 1] < 3:
-                    turns[1] = True
-
-            # Up movement (2)
-            if direction == 2 and grid_y - 1 >= 0:
-                if self.grid[grid_y - 1][grid_x] < 3:
-                    turns[2] = True
-
-            # Down movement (3)
-            if direction == 3 and grid_y + 1 <= max_y:
-                if self.grid[grid_y + 1][grid_x] < 3:
-                    turns[3] = True
-
-        return turns  # Return valid movement directions
+        return turns  # Return allowed movements

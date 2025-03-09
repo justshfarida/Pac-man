@@ -1,11 +1,12 @@
 import pygame
-from game.maze import Maze  # ✅ Import Maze first
-from game.pacman import Pacman  # ✅ Now it works
+from game.maze import Maze  
+from game.pacman import Pacman
 from game.ghosts import Ghost
 from utils.settings import SCREEN_WIDTH, SCREEN_HEIGHT, BLACK
 
 # Initialize Pygame
 pygame.init()
+pygame.font.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 timer = pygame.time.Clock()
 fps = 60
@@ -13,11 +14,44 @@ pygame.display.set_caption("Pac-Man Pathfinding")
 
 # Game Objects
 maze = Maze()
-pacman = Pacman(450, 663, maze)  # ✅ No more import loop
+pacman = Pacman(450, 663, maze)  
 ghosts = [Ghost(200, 200, "BFS"), Ghost(300, 300, "DFS"), Ghost(400, 400, "A*")]
 
+# Initialize game state variables
+font = pygame.font.Font(None, 36)
+score = 0
+power = False
+power_count = 0
+eaten_ghosts = [False, False, False, False]
+def draw_misc():
+    score_text=font.render(f"Score {score}", True, 'white')
+    screen.blit(score_text, (10,920))
+
+def check_collisions(pacman, maze, score, power, power_count, eaten_ghosts):
+    """Checks if Pac-Man eats a pellet or power pellet and updates game state."""
+    tile_height = (SCREEN_HEIGHT - 50) // 32
+    tile_width = SCREEN_WIDTH // 30
+
+    center_x = pacman.centerx // tile_width
+    center_y = pacman.centery // tile_height
+
+    # Check if Pac-Man is within bounds
+    if 0 < pacman.x < 870:
+        if maze.grid[center_y][center_x] == 1:  # Normal Pellet
+            maze.grid[center_y][center_x] = 0  
+            score += 10
+        elif maze.grid[center_y][center_x] == 2:  # Power Pellet
+            maze.grid[center_y][center_x] = 0  
+            score += 50
+            power = True
+            power_count = 0
+            eaten_ghosts = [False, False, False, False]  # Reset eaten ghosts
+
+    return score, power, power_count, eaten_ghosts
 # Game Loop
 run = True
+
+
 while run:
     timer.tick(fps)
     screen.fill(BLACK)
@@ -25,7 +59,9 @@ while run:
     # Draw maze
     maze.draw(screen)
     pacman.draw(screen)
-
+    draw_misc()
+    # Check for pellet and power pellet collisions
+    score, power, power_count, eaten_ghosts = check_collisions(pacman, maze, score, power, power_count, eaten_ghosts)
     # Event Handling
     for event in pygame.event.get():
         if event.type == pygame.QUIT:

@@ -52,7 +52,19 @@ def check_collisions(pacman, maze, score, power, power_count, eaten_ghosts):
     return score, power, power_count, eaten_ghosts
 # Game Loop
 run = True
+paused = False
 
+def pause_game():
+    global paused
+
+    while paused:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_p:  # Press 'P' to resume
+                    paused = False
 
 while run:
     timer.tick(fps)
@@ -77,6 +89,10 @@ while run:
                 pacman.direction_command = 2
             elif event.key == pygame.K_DOWN:
                 pacman.direction_command = 3
+            elif event.key == pygame.K_p:
+                paused = True
+                pause_game()
+
         # if event.type == pygame.KEYUP:
         #     if event.key == pygame.K_RIGHT and pacman.direction_command == 0:
         #         pacman.direction_command = pacman.direction

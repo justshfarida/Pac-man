@@ -126,4 +126,5 @@ class Maze:
             turns[0] = True  
             turns[1] = True
 
+        print(turns)
         return turns  # Return allowed movements

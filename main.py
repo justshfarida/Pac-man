@@ -18,11 +18,13 @@ pacman = Pacman(450, 663, maze)
 ghosts = [Ghost(200, 200, "BFS"), Ghost(300, 300, "DFS"), Ghost(400, 400, "A*")]
 
 # Initialize game state variables
-font = pygame.font.Font(None, 36)
+font = pygame.font.Font("assets/fonts/ARCADE.TTF", 36)
 score = 0
 power = False
 power_count = 0
 eaten_ghosts = [False, False, False, False]
+moving=False
+startup_counter=0
 def draw_misc():
     score_text=font.render(f"Score {score}", True, 'white')
     screen.blit(score_text, (10,920))
@@ -62,7 +64,7 @@ while run:
     draw_misc()
     # Check for pellet and power pellet collisions
     score, power, power_count, eaten_ghosts = check_collisions(pacman, maze, score, power, power_count, eaten_ghosts)
-    # Event Handling
+    
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
@@ -75,7 +77,15 @@ while run:
                 pacman.direction_command = 2
             elif event.key == pygame.K_DOWN:
                 pacman.direction_command = 3
-
+        # if event.type == pygame.KEYUP:
+        #     if event.key == pygame.K_RIGHT and pacman.direction_command == 0:
+        #         pacman.direction_command = pacman.direction
+        #     if event.key == pygame.K_LEFT and pacman.direction_command == 1:
+        #         pacman.direction_command = pacman.direction
+        #     if event.key == pygame.K_UP and pacman.direction_command == 2:
+        #         pacman.direction_command = pacman.direction
+        #     if event.key == pygame.K_DOWN and pacman.direction_command == 3:
+        #         pacman.direction_command = pacman.direction
     pacman.move()
     pygame.display.update()
 

@@ -2,7 +2,7 @@ import pygame
 from game.maze import Maze  
 from game.pacman import Pacman
 from game.ghosts import Ghost
-from utils.settings import SCREEN_WIDTH, SCREEN_HEIGHT, BLACK
+from utils.settings import SCREEN_WIDTH, SCREEN_HEIGHT, BLACK, TILE_LEN
 
 # Initialize Pygame
 pygame.init()
@@ -14,7 +14,7 @@ pygame.display.set_caption("Pac-Man Pathfinding")
 
 # Game Objects
 maze = Maze()
-pacman = Pacman(450, 663, maze)  
+pacman = Pacman(TILE_LEN*16, TILE_LEN*24, maze)
 ghosts = [Ghost(200, 200, "BFS"), Ghost(300, 300, "DFS"), Ghost(400, 400, "A*")]
 
 # Initialize game state variables

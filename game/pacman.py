@@ -1,35 +1,41 @@
 import pygame
-from utils.settings import YELLOW
+from utils.settings import TILE_LEN
+
 
 class Pacman:
     def __init__(self, x, y, maze):
         self.x = x
         self.y = y
         self.maze = maze
-        self.speed = 2  
+        self.speed = 2 # There is a bug when odd number used as speed
         self.direction = 0  # 0: RIGHT, 1: LEFT, 2: UP, 3: DOWN
         self.direction_command = 0  
         self.counter = 0  
-        self.centerx = x + 23
-        self.centery = y + 24
+        self.centerx = x + TILE_LEN//2
+        self.centery = y + TILE_LEN//2
         self.turns = [False, False, False, False]  # Ensure it's always initialized
 
         # Load Pac-Man images (animation frames)
         self.player_images = []
         for i in range(1, 5):  
             image = pygame.image.load(f'./assets/player_images/{i}.png')
-            self.player_images.append(pygame.transform.scale(image, (45, 45)))
+            self.player_images.append(pygame.transform.scale(image, (36, 36)))
+
+    def _is_centered(self) -> bool:
+        func = lambda x: x % TILE_LEN == TILE_LEN//2
+        return func(self.centerx) and func(self.centery)
 
     def move(self):
         """Moves Pac-Man in the allowed direction."""
-        self.centerx = self.x + 23
-        self.centery = self.y + 24
+        self.centerx = self.x + TILE_LEN//2
+        self.centery = self.y + TILE_LEN//2
 
         # Check allowed movements
-        self.turns = self.maze.check_position(self.centerx, self.centery, self.direction_command)
+        if self._is_centered():
+            self.turns = self.maze.check_position(self.centerx, self.centery, self.direction_command)
 
-        if self.turns[self.direction_command]:  
-            self.direction = self.direction_command
+            if self.turns[self.direction_command]:
+                self.direction = self.direction_command
 
         if self.direction == 0 and self.turns[0]:  # RIGHT
             self.x += self.speed
@@ -44,6 +50,7 @@ class Pacman:
             self.x = -47
         if self.x < -50:
             self.x = 897
+        print(self.x, self.y, self.centerx, self.centery)
 
     def draw(self, screen):
         """Draws the animated Pac-Man sprite with direction adjustments."""

@@ -1,8 +1,9 @@
 import math
 PI=math.pi
 #  Screen dimensions
-SCREEN_WIDTH = 900
-SCREEN_HEIGHT = 950
+TILE_LEN = 28
+SCREEN_WIDTH = 30*TILE_LEN
+SCREEN_HEIGHT = 32*TILE_LEN+50
 
 # Colors
 BLACK = (0, 0, 0)

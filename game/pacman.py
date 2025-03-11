@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Dict
 
 import pygame
 
@@ -31,10 +31,21 @@ class Pacman(EntityInt):
         self.turns: List[bool]              = [False, False, False, False]  # Ensure it's always initialized
 
         # Load Pac-Man images (animation frames)
-        self.player_images = []
-        for i in range(1, 5):  
+        self.player_images: Dict[Direction, List[pygame.Surface]] = {
+            Direction.RIGHT: [],
+            Direction.LEFT: [],
+            Direction.UP: [],
+            Direction.DOWN: [],
+        }
+        for i in range(1, 5):
             image = pygame.image.load(f'./assets/player_images/{i}.png')
-            self.player_images.append(pygame.transform.scale(image, (36, 36)))
+            scaled = pygame.transform.scale(image, (36, 36))
+
+            self.player_images[Direction.RIGHT].append(scaled)
+            self.player_images[Direction.LEFT].append(pygame.transform.flip(scaled, True, False))
+            self.player_images[Direction.DOWN].append(pygame.transform.rotate(scaled, 270))
+            self.player_images[Direction.UP].append(pygame.transform.rotate(scaled, 90))
+
 
     def _is_centered(self) -> bool:
         return self.x % TILE_LEN == self.y % TILE_LEN == TILE_LEN//2
@@ -63,22 +74,16 @@ class Pacman(EntityInt):
         elif x_pos <= -2:
             self.x = settings.SCREEN_WIDTH
 
-    def draw(self, screen) -> None:
+    def draw(
+            self,
+            screen: pygame.Surface
+    ) -> None:
         """Draws the animated Pac-Man sprite with direction adjustments."""
 
         # Update animation frame
         self.counter = (self.counter + 1) % 20  
         frame_index = (self.counter // 5) % 4
 
-        x = self.x - TILE_LEN//2
-        y = self.y - TILE_LEN//2
-
-        match self.direction:
-            case Direction.RIGHT:
-                screen.blit(self.player_images[frame_index], (x, y))
-            case Direction.LEFT:
-                screen.blit(pygame.transform.flip(self.player_images[frame_index], True, False), (x, y))
-            case Direction.UP:
-                screen.blit(pygame.transform.rotate(self.player_images[frame_index], 90), (x, y))
-            case Direction.DOWN:
-                screen.blit(pygame.transform.rotate(self.player_images[frame_index], 270), (x, y))
+        dest = (self.x - TILE_LEN//2, self.y - TILE_LEN//2)
+        image = self.player_images[self.direction][frame_index]
+        screen.blit(source=image, dest=dest)

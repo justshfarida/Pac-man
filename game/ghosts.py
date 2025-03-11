@@ -1,15 +1,18 @@
 import pygame
 import random
-from utils.settings import BLUE
 
-class Ghost:
+from game.abstract import EntityInt
+
+
+class Ghost(EntityInt):
     def __init__(self, x, y, algorithm="BFS"):
         self.rect = pygame.Rect(x, y, 30, 30)
         self.color = (255, 0, 0)  # Red ghost
         self.algorithm = algorithm  # Choose BFS, DFS, or A*
         self.speed = 2
 
-    def move(self, pacman):
+
+    def move(self):
         # Placeholder movement: random choice until pathfinding is added
         direction = random.choice(["left", "right", "up", "down"])
         if direction == "left":

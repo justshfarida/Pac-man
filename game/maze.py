@@ -4,6 +4,7 @@ from typing import List
 
 import pygame
 
+from game.structs import Position
 from game.structs.direction import Direction
 from utils.settings import settings, Color
 
@@ -89,47 +90,21 @@ class Maze:
 
     def check_position(
             self,
-            centerx,
-            centery,
-            direction: Direction
+            grid_pos: Position,
     ) -> List[bool]:
         turns = [False, False, False, False]  # Default: No movement allowed
-        fudge_factor = 15  # Small adjustment for smooth movement
 
-        x = centerx // TILE_LEN
-        y = centery // TILE_LEN
-
-        print(x)
+        x, y = grid_pos.x, grid_pos.y
 
         if x < 28:
-            # if direction == Direction.RIGHT and self.grid[y][x+1] < 3:  # Moving right
-            #     turns[0] = True  # Left allowed
-            # if direction == Direction.LEFT and self.grid[y][x-1] < 3:  # Moving left
-            #     turns[1] = True  # Right allowed
-            # if direction == Direction.UP and self.grid[y-1][x] < 3:  # Moving up
-            #     turns[2] = True  # Down allowed
-            # if direction == Direction.DOWN and self.grid[y+1][x] < 3:  # Moving down
-            #     turns[3] = True  # Up allowed
-
-            if direction in [Direction.UP, Direction.DOWN]:  # Vertical movement
-                if self.grid[(centery + fudge_factor) // TILE_LEN][x] < 3:
-                    turns[3] = True  # Down
-                if self.grid[(centery - fudge_factor) // TILE_LEN][x] < 3:
-                    turns[2] = True  # Up
-                if self.grid[y][x-1] < 3:
-                    turns[1] = True  # Left
-                if self.grid[y][x+1] < 3:
-                    turns[0] = True  # Right
-
-            if direction in [Direction.RIGHT, Direction.LEFT]:  # Horizontal movement
-                if self.grid[(centery + TILE_LEN) // TILE_LEN][x] < 3:
-                    turns[3] = True  # Down
-                if self.grid[(centery - TILE_LEN) // TILE_LEN][x] < 3:
-                    turns[2] = True  # Up
-                if self.grid[y][(centerx - fudge_factor) // TILE_LEN] < 3:
-                    turns[1] = True  # Left
-                if self.grid[y][(centerx + fudge_factor) // TILE_LEN] < 3:
-                    turns[0] = True  # Right
+            if self.grid[y+1][x] < 3:
+                turns[3] = True  # Down
+            if self.grid[y-1][x] < 3:
+                turns[2] = True  # Up
+            if self.grid[y][x-1] < 3:
+                turns[1] = True  # Left
+            if self.grid[y][x+1] < 3:
+                turns[0] = True  # Right
         else:
             turns[0] = True  
             turns[1] = True

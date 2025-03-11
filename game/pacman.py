@@ -43,7 +43,7 @@ class Pacman(EntityInt):
         """Moves Pac-Man in the allowed direction."""
         # Check allowed movements
         if self._is_centered():
-            self.turns = self.maze.check_position(self.x, self.y, self.direction_command)
+            self.turns = self.maze.check_position(self.get_position())
 
             if self.turns[self.direction_command.value]:
                 self.direction = self.direction_command

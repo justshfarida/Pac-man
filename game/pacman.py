@@ -1,24 +1,34 @@
-from typing import List, Tuple
+from __future__ import annotations
+
+from typing import List, TYPE_CHECKING
 
 import pygame
 
-from game.abstract import Entity
+from game.abstract import EntityInt
+from game.structs import Direction
 from utils.settings import settings
+
+if TYPE_CHECKING:
+    from game.maze import Maze
+    from game.structs import Position
 
 TILE_LEN = settings.TILE_LEN
 
-class Pacman(Entity):
-    def __init__(self, starting_position: Tuple[int, int], maze):
-        self.x: int = starting_position[0]*TILE_LEN
-        self.y: int = starting_position[1]*TILE_LEN
-        self.maze = maze
-        self.speed: int = 2 # TODO: There is a bug when odd number used as speed
-        self.direction = 0  # 0: RIGHT, 1: LEFT, 2: UP, 3: DOWN
-        self.direction_command = 0  
-        self.counter: int = 0
-        self.centerx: int = self.x + TILE_LEN//2
-        self.centery: int = self.y + TILE_LEN//2
-        self.turns: List[bool] = [False, False, False, False]  # Ensure it's always initialized
+
+class Pacman(EntityInt):
+    def __init__(
+            self,
+            starting_position: Position,
+            maze: Maze
+    ) -> None:
+        self.x: int                         = starting_position.x * TILE_LEN + TILE_LEN//2
+        self.y: int                         = starting_position.y * TILE_LEN + TILE_LEN//2
+        self.maze: Maze                     = maze
+        self.speed: int                     = 2 # TODO: There is a bug when odd number used as speed
+        self.direction: Direction           = Direction.RIGHT
+        self.direction_command: Direction   = self.direction
+        self.counter: int                   = 0
+        self.turns: List[bool]              = [False, False, False, False]  # Ensure it's always initialized
 
         # Load Pac-Man images (animation frames)
         self.player_images = []
@@ -27,46 +37,48 @@ class Pacman(Entity):
             self.player_images.append(pygame.transform.scale(image, (36, 36)))
 
     def _is_centered(self) -> bool:
-        return self.centerx % TILE_LEN == self.centery % TILE_LEN == TILE_LEN//2
+        return self.x % TILE_LEN == self.y % TILE_LEN == TILE_LEN//2
 
-    def move(self):
+    def move(self) -> None:
         """Moves Pac-Man in the allowed direction."""
-        self.centerx = self.x + TILE_LEN//2
-        self.centery = self.y + TILE_LEN//2
-
         # Check allowed movements
         if self._is_centered():
-            self.turns = self.maze.check_position(self.centerx, self.centery, self.direction_command)
+            self.turns = self.maze.check_position(self.x, self.y, self.direction_command)
 
-            if self.turns[self.direction_command]:
+            if self.turns[self.direction_command.value]:
                 self.direction = self.direction_command
 
-        if self.direction == 0 and self.turns[0]:  # RIGHT
+        if self.direction == Direction.RIGHT and self.turns[0]:
             self.x += self.speed
-        elif self.direction == 1 and self.turns[1]:  # LEFT
+        elif self.direction == Direction.LEFT and self.turns[1]:
             self.x -= self.speed
-        elif self.direction == 2 and self.turns[2]:  # UP
+        elif self.direction == Direction.UP and self.turns[2]:
             self.y -= self.speed
-        elif self.direction == 3 and self.turns[3]:  # DOWN
+        elif self.direction == Direction.DOWN and self.turns[3]:
             self.y += self.speed
 
-        if self.x > 900: # TODO: Fix values
-            self.x = -47
-        if self.x < -50:
-            self.x = 897
+        x_pos = self.x // TILE_LEN
+        if x_pos >= 30:
+            self.x = 0 - TILE_LEN
+        elif x_pos <= -2:
+            self.x = settings.SCREEN_WIDTH
 
-    def draw(self, screen):
+    def draw(self, screen) -> None:
         """Draws the animated Pac-Man sprite with direction adjustments."""
 
         # Update animation frame
         self.counter = (self.counter + 1) % 20  
-        frame_index = (self.counter // 5) % 4  
+        frame_index = (self.counter // 5) % 4
 
-        if self.direction == 0:  
-            screen.blit(self.player_images[frame_index], (self.x, self.y))
-        elif self.direction == 1:  
-            screen.blit(pygame.transform.flip(self.player_images[frame_index], True, False), (self.x, self.y))
-        elif self.direction == 2:  
-            screen.blit(pygame.transform.rotate(self.player_images[frame_index], 90), (self.x, self.y))
-        elif self.direction == 3: 
-            screen.blit(pygame.transform.rotate(self.player_images[frame_index], 270), (self.x, self.y))
+        x = self.x - TILE_LEN//2
+        y = self.y - TILE_LEN//2
+
+        match self.direction:
+            case Direction.RIGHT:
+                screen.blit(self.player_images[frame_index], (x, y))
+            case Direction.LEFT:
+                screen.blit(pygame.transform.flip(self.player_images[frame_index], True, False), (x, y))
+            case Direction.UP:
+                screen.blit(pygame.transform.rotate(self.player_images[frame_index], 90), (x, y))
+            case Direction.DOWN:
+                screen.blit(pygame.transform.rotate(self.player_images[frame_index], 270), (x, y))

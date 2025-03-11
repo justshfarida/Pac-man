@@ -1,13 +1,20 @@
+from __future__ import annotations
+
+from typing import List
+
 import pygame
+
+from game.structs.direction import Direction
 from utils.settings import settings, Color
 
 TILE_LEN = settings.TILE_LEN
+PI = settings.PI
 
 class Maze:
-    def __init__(self):
-        self.tile_height=TILE_LEN #(SCREEN_HEIGHT-50)//32
-        self.tile_width=TILE_LEN #SCREEN_WIDTH//30
-        self.flicker_counter = 0  #Tracks flickering effect
+    def __init__(self) -> None:
+        self.tile_height: int       = TILE_LEN
+        self.tile_width: int        = TILE_LEN
+        self.flicker_counter: int   = 0  #Tracks flickering effect
 
         self.grid = [
 [6, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5],
@@ -49,7 +56,6 @@ class Maze:
         """Draws the maze elements on the screen, including flickering pellets."""
         self.flicker_counter = (self.flicker_counter + 1) % 6  # Resets every 6 frames
 
-
         for row in range(len(self.grid)):
             for col in range(len(self.grid[row])):
                 center_x = col * self.tile_width + self.tile_width // 2
@@ -81,46 +87,49 @@ class Maze:
                 elif self.grid[row][col] == 9: #door for ghosts
                      pygame.draw.line(screen, Color.WHITE, (col*self.tile_width,center_y), (col*self.tile_width+self.tile_width, center_y) ,3)
 
-    def check_position(self, centerx, centery, direction):
+    def check_position(
+            self,
+            centerx,
+            centery,
+            direction: Direction
+    ) -> List[bool]:
         turns = [False, False, False, False]  # Default: No movement allowed
         fudge_factor = 15  # Small adjustment for smooth movement
 
         x = centerx // TILE_LEN
         y = centery // TILE_LEN
 
-        if centerx // TILE_LEN < 29:
-            if direction == 0 and self.grid[y][x+1] < 3:  # Moving right
-                turns[0] = True  # Left allowed
-            if direction == 1 and self.grid[y][x-1] < 3:  # Moving left
-                turns[1] = True  # Right allowed
-            if direction == 2 and self.grid[y-1][x] < 3:  # Moving up
-                turns[2] = True  # Down allowed
-            if direction == 3 and self.grid[y+1][x] < 3:  # Moving down
-                turns[3] = True  # Up allowed
+        print(x)
 
-            if direction in [2, 3]:  # Vertical movement
-                if 12 <= centerx % TILE_LEN <= 18:
-                    if self.grid[(centery + fudge_factor) // TILE_LEN][x] < 3:
-                        turns[3] = True  # Down
-                    if self.grid[(centery - fudge_factor) // TILE_LEN][x] < 3:
-                        turns[2] = True  # Up
-                if 12 <= centery % TILE_LEN <= 18:
-                    if self.grid[y][(centerx - TILE_LEN) // TILE_LEN] < 3:
-                        turns[1] = True  # Left
-                    if self.grid[y][(centerx + TILE_LEN) // TILE_LEN] < 3:
-                        turns[0] = True  # Right
+        if x < 28:
+            # if direction == Direction.RIGHT and self.grid[y][x+1] < 3:  # Moving right
+            #     turns[0] = True  # Left allowed
+            # if direction == Direction.LEFT and self.grid[y][x-1] < 3:  # Moving left
+            #     turns[1] = True  # Right allowed
+            # if direction == Direction.UP and self.grid[y-1][x] < 3:  # Moving up
+            #     turns[2] = True  # Down allowed
+            # if direction == Direction.DOWN and self.grid[y+1][x] < 3:  # Moving down
+            #     turns[3] = True  # Up allowed
 
-            if direction in [0, 1]:  # Horizontal movement
-                if 12 <= centerx % TILE_LEN <= 18:
-                    if self.grid[(centery + TILE_LEN) // TILE_LEN][x] < 3:
-                        turns[3] = True  # Down
-                    if self.grid[(centery - TILE_LEN) // TILE_LEN][x] < 3:
-                        turns[2] = True  # Up
-                if 12 <= centery % TILE_LEN <= 18:
-                    if self.grid[y][(centerx - fudge_factor) // TILE_LEN] < 3:
-                        turns[1] = True  # Left
-                    if self.grid[y][(centerx + fudge_factor) // TILE_LEN] < 3:
-                        turns[0] = True  # Right
+            if direction in [Direction.UP, Direction.DOWN]:  # Vertical movement
+                if self.grid[(centery + fudge_factor) // TILE_LEN][x] < 3:
+                    turns[3] = True  # Down
+                if self.grid[(centery - fudge_factor) // TILE_LEN][x] < 3:
+                    turns[2] = True  # Up
+                if self.grid[y][x-1] < 3:
+                    turns[1] = True  # Left
+                if self.grid[y][x+1] < 3:
+                    turns[0] = True  # Right
+
+            if direction in [Direction.RIGHT, Direction.LEFT]:  # Horizontal movement
+                if self.grid[(centery + TILE_LEN) // TILE_LEN][x] < 3:
+                    turns[3] = True  # Down
+                if self.grid[(centery - TILE_LEN) // TILE_LEN][x] < 3:
+                    turns[2] = True  # Up
+                if self.grid[y][(centerx - fudge_factor) // TILE_LEN] < 3:
+                    turns[1] = True  # Left
+                if self.grid[y][(centerx + fudge_factor) // TILE_LEN] < 3:
+                    turns[0] = True  # Right
         else:
             turns[0] = True  
             turns[1] = True

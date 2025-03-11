@@ -1,6 +1,6 @@
-from .entity import Entity
+from .entity import EntityInt
 
 
 __all__ = (
-    "Entity",
+    "EntityInt",
 )

@@ -1,10 +1,10 @@
 import pygame
 import random
 
-from game.abstract import Entity
+from game.abstract import EntityInt
 
 
-class Ghost(Entity):
+class Ghost(EntityInt):
     def __init__(self, x, y, algorithm="BFS"):
         self.rect = pygame.Rect(x, y, 30, 30)
         self.color = (255, 0, 0)  # Red ghost

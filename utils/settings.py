@@ -1,6 +1,5 @@
 import math
 from dataclasses import dataclass
-from enum import Enum
 
 
 @dataclass
@@ -13,7 +12,7 @@ class Settings:
     SCREEN_HEIGHT: int = 32 * TILE_LEN + 50
 
 
-class Color(Enum):
+class Color:
     BLACK = (0, 0, 0)
     YELLOW = (255, 255, 0)
     LINE_COLOR = (0, 0, 255)

@@ -1,15 +1,24 @@
 import math
-PI=math.pi
-#  Screen dimensions
-TILE_LEN = 28
-SCREEN_WIDTH = 30*TILE_LEN
-SCREEN_HEIGHT = 32*TILE_LEN+50
+from dataclasses import dataclass
+from enum import Enum
 
-# Colors
-BLACK = (0, 0, 0)
-YELLOW = (255, 255, 0)
-LINE_COLOR = (0, 0, 255)
-BLUE = (0, 0, 255)
-WHITE=(255, 255, 255)
-# Maze tile size
-TILE_SIZE = 50
+
+@dataclass
+class Settings:
+    PI: float = math.pi
+
+    #  Screen dimensions
+    TILE_LEN: int = 28
+    SCREEN_WIDTH: int = 30 * TILE_LEN
+    SCREEN_HEIGHT: int = 32 * TILE_LEN + 50
+
+
+class Color(Enum):
+    BLACK = (0, 0, 0)
+    YELLOW = (255, 255, 0)
+    LINE_COLOR = (0, 0, 255)
+    BLUE = (0, 0, 255)
+    WHITE=(255, 255, 255)
+
+
+settings = Settings()

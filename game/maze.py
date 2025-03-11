@@ -1,5 +1,7 @@
 import pygame
-from utils.settings import LINE_COLOR, TILE_LEN, SCREEN_HEIGHT, SCREEN_WIDTH, WHITE, PI
+from utils.settings import settings, Color
+
+TILE_LEN = settings.TILE_LEN
 
 class Maze:
     def __init__(self):
@@ -54,30 +56,30 @@ class Maze:
                 center_y = row * self.tile_height + self.tile_height // 2
 
                 if self.grid[row][col] == 1: #for dot
-                    pygame.draw.circle(screen, WHITE, (center_x, center_y),  4 ) #centering dot
+                    pygame.draw.circle(screen, Color.WHITE, (center_x, center_y),  4 ) #centering dot
                 elif self.grid[row][col] == 2: #for big dot
                          if self.flicker_counter < 3:
-                            pygame.draw.circle(screen, WHITE, (center_x, center_y), 10)
+                            pygame.draw.circle(screen, Color.WHITE, (center_x, center_y), 10)
 
                 elif self.grid[row][col] == 3: #straight vertical line
-                    pygame.draw.line(screen, LINE_COLOR, (center_x,row*self.tile_height), (center_x, row*self.tile_height+self.tile_height) ,3)
+                    pygame.draw.line(screen, Color.LINE_COLOR, (center_x,row*self.tile_height), (center_x, row*self.tile_height+self.tile_height) ,3)
                 elif self.grid[row][col] == 4: #straight horizontal line
-                    pygame.draw.line(screen, LINE_COLOR, (col*self.tile_width,center_y), (col*self.tile_width+self.tile_width, center_y) ,3)
+                    pygame.draw.line(screen, Color.LINE_COLOR, (col*self.tile_width,center_y), (col*self.tile_width+self.tile_width, center_y) ,3)
 
                 elif self.grid[row][col] == 5: #arc
-                    pygame.draw.arc(screen, LINE_COLOR, [(col*self.tile_width-(self.tile_width*0.4))-2, (row*self.tile_height+(self.tile_height//2)), self.tile_width, self.tile_height] ,0, PI/2, 3)
+                    pygame.draw.arc(screen, Color.LINE_COLOR, [(col*self.tile_width-(self.tile_width*0.4))-2, (row*self.tile_height+(self.tile_height//2)), self.tile_width, self.tile_height] ,0, PI/2, 3)
 
                 elif self.grid[row][col] == 6:
-                    pygame.draw.arc(screen, LINE_COLOR, [(col*self.tile_width+(self.tile_width//2)), (row*self.tile_height+(self.tile_height//2)), self.tile_width, self.tile_height] ,PI/2,PI, 3)
+                    pygame.draw.arc(screen, Color.LINE_COLOR, [(col*self.tile_width+(self.tile_width//2)), (row*self.tile_height+(self.tile_height//2)), self.tile_width, self.tile_height] ,PI/2,PI, 3)
 
                 elif self.grid[row][col] == 7:
-                    pygame.draw.arc(screen, LINE_COLOR, [(col*self.tile_width+(self.tile_width//2)), (row*self.tile_height-(self.tile_height*0.4)), self.tile_width, self.tile_height] ,PI, 3*PI/2, 3)
+                    pygame.draw.arc(screen, Color.LINE_COLOR, [(col*self.tile_width+(self.tile_width//2)), (row*self.tile_height-(self.tile_height*0.4)), self.tile_width, self.tile_height] ,PI, 3*PI/2, 3)
 
                 elif self.grid[row][col] == 8:
-                    pygame.draw.arc(screen, LINE_COLOR, [(col*self.tile_width-(self.tile_width*0.4))-2, (row*self.tile_height-(self.tile_height*0.4)), self.tile_width, self.tile_height] ,3*PI/2,2*PI, 3)
+                    pygame.draw.arc(screen, Color.LINE_COLOR, [(col*self.tile_width-(self.tile_width*0.4))-2, (row*self.tile_height-(self.tile_height*0.4)), self.tile_width, self.tile_height] ,3*PI/2,2*PI, 3)
 
                 elif self.grid[row][col] == 9: #door for ghosts
-                     pygame.draw.line(screen, WHITE, (col*self.tile_width,center_y), (col*self.tile_width+self.tile_width, center_y) ,3)
+                     pygame.draw.line(screen, Color.WHITE, (col*self.tile_width,center_y), (col*self.tile_width+self.tile_width, center_y) ,3)
 
     def check_position(self, centerx, centery, direction):
         turns = [False, False, False, False]  # Default: No movement allowed
@@ -123,5 +125,4 @@ class Maze:
             turns[0] = True  
             turns[1] = True
 
-        print(turns)
         return turns  # Return allowed movements

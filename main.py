@@ -1,108 +1,118 @@
 import pygame
-from game.maze import Maze  
+from game.maze import Maze
 from game.pacman import Pacman
 from game.ghosts import Ghost
-from utils.settings import SCREEN_WIDTH, SCREEN_HEIGHT, BLACK, TILE_LEN
+from utils.settings import Color, settings
 
-# Initialize Pygame
-pygame.init()
-pygame.font.init()
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-timer = pygame.time.Clock()
-fps = 60
-pygame.display.set_caption("Pac-Man Pathfinding")
 
-# Game Objects
-maze = Maze()
-pacman = Pacman(TILE_LEN*16, TILE_LEN*24, maze)
-ghosts = [Ghost(200, 200, "BFS"), Ghost(300, 300, "DFS"), Ghost(400, 400, "A*")]
+class Game:
+    def __init__(
+            self,
+    ) -> None:
+        pygame.init()
+        pygame.font.init()
 
-# Initialize game state variables
-font = pygame.font.Font("assets/fonts/ARCADE.TTF", 36)
-score = 0
-power = False
-power_count = 0
-eaten_ghosts = [False, False, False, False]
-moving=False
-startup_counter=0
-def draw_misc():
-    score_text=font.render(f"Score {score}", True, 'white')
-    screen.blit(score_text, (10,920))
+        self.screen = pygame.display.set_mode((settings.SCREEN_WIDTH, settings.SCREEN_HEIGHT))
+        self.timer = pygame.time.Clock()
+        self.fps = 60
 
-def check_collisions(pacman, maze, score, power, power_count, eaten_ghosts):
-    """Checks if Pac-Man eats a pellet or power pellet and updates game state."""
-    tile_height = (SCREEN_HEIGHT - 50) // 32
-    tile_width = SCREEN_WIDTH // 30
+        pygame.display.set_caption("Pac-Man Pathfinding")
 
-    center_x = pacman.centerx // tile_width
-    center_y = pacman.centery // tile_height
+        # Game Objects
+        self.maze = Maze()
+        self.pacman = Pacman(starting_position=(16, 24), maze=self.maze)
+        self.ghosts = [
+            Ghost(200, 200, "BFS"),
+            Ghost(300, 300, "DFS"),
+            Ghost(400, 400, "A*")
+        ]
 
-    # Check if Pac-Man is within bounds
-    if 0 < pacman.x < 870:
-        if maze.grid[center_y][center_x] == 1:  # Normal Pellet
-            maze.grid[center_y][center_x] = 0  
-            score += 10
-        elif maze.grid[center_y][center_x] == 2:  # Power Pellet
-            maze.grid[center_y][center_x] = 0  
-            score += 50
-            power = True
-            power_count = 0
-            eaten_ghosts = [False, False, False, False]  # Reset eaten ghosts
+        # Initialize game state variables
+        self.font = pygame.font.Font("assets/fonts/ARCADE.TTF", 36)
+        self.score = 0
+        self.power = False
+        self.power_count = 0
+        self.eaten_ghosts = [False, False, False, False]
+        self.moving = False
+        self.startup_counter = 0
 
-    return score, power, power_count, eaten_ghosts
-# Game Loop
-run = True
-paused = False
+        # Game Loop
+        self.running = True
+        self.paused = False
 
-def pause_game():
-    global paused
+    def draw_misc(self):
+        score_text = self.font.render(f"Score {self.score}", True, 'white')
+        self.screen.blit(score_text, (10, 920))
 
-    while paused:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                exit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_p:  # Press 'P' to resume
-                    paused = False
+    def check_collisions(self):
+        """Checks if Pac-Man eats a pellet or power pellet and updates game state."""
+        tile_height = (settings.SCREEN_HEIGHT - 50) // 32
+        tile_width = settings.SCREEN_WIDTH // 30
 
-while run:
-    timer.tick(fps)
-    screen.fill(BLACK)
+        center_x = self.pacman.centerx // tile_width
+        center_y = self.pacman.centery // tile_height
 
-    # Draw maze
-    maze.draw(screen)
-    pacman.draw(screen)
-    draw_misc()
-    # Check for pellet and power pellet collisions
-    score, power, power_count, eaten_ghosts = check_collisions(pacman, maze, score, power, power_count, eaten_ghosts)
-    
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RIGHT:
-                pacman.direction_command = 0
-            elif event.key == pygame.K_LEFT:
-                pacman.direction_command = 1
-            elif event.key == pygame.K_UP:
-                pacman.direction_command = 2
-            elif event.key == pygame.K_DOWN:
-                pacman.direction_command = 3
-            elif event.key == pygame.K_p:
-                paused = True
-                pause_game()
+        # Check if Pac-Man is within bounds
+        if 0 < self.pacman.x < 870:
+            if self.maze.grid[center_y][center_x] == 1:  # Normal Pellet
+                self.maze.grid[center_y][center_x] = 0
+                self.score += 10
+            elif self.maze.grid[center_y][center_x] == 2:  # Power Pellet
+                self.maze.grid[center_y][center_x] = 0
+                self.score += 50
+                self.power = True
+                self.power_count = 0
+                self.eaten_ghosts = [False, False, False, False]  # Reset eaten ghosts
 
-        # if event.type == pygame.KEYUP:
-        #     if event.key == pygame.K_RIGHT and pacman.direction_command == 0:
-        #         pacman.direction_command = pacman.direction
-        #     if event.key == pygame.K_LEFT and pacman.direction_command == 1:
-        #         pacman.direction_command = pacman.direction
-        #     if event.key == pygame.K_UP and pacman.direction_command == 2:
-        #         pacman.direction_command = pacman.direction
-        #     if event.key == pygame.K_DOWN and pacman.direction_command == 3:
-        #         pacman.direction_command = pacman.direction
-    pacman.move()
-    pygame.display.update()
+    def pause_game(self):
+        while self.paused:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_p:  # Press 'P' to resume
+                        self.paused = False
 
-pygame.quit()
+    def run(self) -> None:
+        while self.running:
+            self.timer.tick(self.fps)
+            self.screen.fill(Color.BLACK)
+
+            # Draw maze
+            self.maze.draw(self.screen)
+            self.pacman.draw(self.screen)
+            self.draw_misc()
+
+            # Check for pellet and power pellet collisions
+            self.check_collisions()
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RIGHT:
+                        self.pacman.direction_command = 0
+                    elif event.key == pygame.K_LEFT:
+                        self.pacman.direction_command = 1
+                    elif event.key == pygame.K_UP:
+                        self.pacman.direction_command = 2
+                    elif event.key == pygame.K_DOWN:
+                        self.pacman.direction_command = 3
+                    elif event.key == pygame.K_p:
+                        self.paused = True
+                        self.pause_game()
+
+            self.pacman.move()
+            pygame.display.update()
+
+        pygame.quit()
+
+
+def main():
+    game = Game()
+    game.run()
+
+
+if __name__ == "__main__":
+    main()

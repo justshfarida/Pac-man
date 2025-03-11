@@ -1,19 +1,24 @@
+from typing import List, Tuple
+
 import pygame
-from utils.settings import TILE_LEN
 
+from game.abstract import Entity
+from utils.settings import settings
 
-class Pacman:
-    def __init__(self, x, y, maze):
-        self.x = x
-        self.y = y
+TILE_LEN = settings.TILE_LEN
+
+class Pacman(Entity):
+    def __init__(self, starting_position: Tuple[int, int], maze):
+        self.x: int = starting_position[0]*TILE_LEN
+        self.y: int = starting_position[1]*TILE_LEN
         self.maze = maze
-        self.speed = 2 # There is a bug when odd number used as speed
+        self.speed: int = 2 # TODO: There is a bug when odd number used as speed
         self.direction = 0  # 0: RIGHT, 1: LEFT, 2: UP, 3: DOWN
         self.direction_command = 0  
-        self.counter = 0  
-        self.centerx = x + TILE_LEN//2
-        self.centery = y + TILE_LEN//2
-        self.turns = [False, False, False, False]  # Ensure it's always initialized
+        self.counter: int = 0
+        self.centerx: int = self.x + TILE_LEN//2
+        self.centery: int = self.y + TILE_LEN//2
+        self.turns: List[bool] = [False, False, False, False]  # Ensure it's always initialized
 
         # Load Pac-Man images (animation frames)
         self.player_images = []
@@ -22,8 +27,7 @@ class Pacman:
             self.player_images.append(pygame.transform.scale(image, (36, 36)))
 
     def _is_centered(self) -> bool:
-        func = lambda x: x % TILE_LEN == TILE_LEN//2
-        return func(self.centerx) and func(self.centery)
+        return self.centerx % TILE_LEN == self.centery % TILE_LEN == TILE_LEN//2
 
     def move(self):
         """Moves Pac-Man in the allowed direction."""
@@ -46,11 +50,10 @@ class Pacman:
         elif self.direction == 3 and self.turns[3]:  # DOWN
             self.y += self.speed
 
-        if self.x > 900:
+        if self.x > 900: # TODO: Fix values
             self.x = -47
         if self.x < -50:
             self.x = 897
-        print(self.x, self.y, self.centerx, self.centery)
 
     def draw(self, screen):
         """Draws the animated Pac-Man sprite with direction adjustments."""

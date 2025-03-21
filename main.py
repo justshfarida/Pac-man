@@ -30,11 +30,15 @@ class Game:
         # Game Objects
         self.maze: Maze             = Maze()
         self.pacman: Pacman         = Pacman(starting_position=Position(16, 24), maze=self.maze)
-        self.ghosts: List[Ghost]    = [
-            Ghost(200, 200, "BFS"),
-            Ghost(300, 300, "DFS"),
-            Ghost(400, 400, "A*")
-        ]
+    # (self, name, start_pos, color, speed, behavior, maze)
+        
+        self.ghosts: List[Ghost] = [
+        Ghost(Position(14, 14), "red", 2, "blinky", self.maze),   # Blinky (Chases)
+        Ghost(Position(14, 17), "pink", 2, "pinky", self.maze),   # Pinky (Predicts)
+        Ghost(Position(12, 14), "blue", 2, "inky", self.maze),    # Inky (Weird movement)
+        Ghost(Position(16, 14), "orange", 2, "clyde", self.maze), # Clyde (Runs away)
+    ]
+
 
         # Initialize game state variables
         self.font: PygameFont           = pygame.font.Font("assets/fonts/ARCADE.TTF", 36)
@@ -88,6 +92,8 @@ class Game:
             # Draw game
             self.maze.draw(self.screen)
             self.pacman.draw(self.screen)
+            for ghost in self.ghosts:
+                 ghost.draw(self.screen)
             self.draw_misc()
 
             # Check for pellet and power pellet collisions
@@ -108,8 +114,13 @@ class Game:
                     elif event.key == pygame.K_p:
                         self.paused = True
                         self.pause_game()
+                        
 
             self.pacman.move()
+            
+            for ghost in self.ghosts:
+                ghost.move(self.pacman.get_position(), self.ghosts[0].get_position())  # Ensure ghosts move
+
             pygame.display.update()
 
         pygame.quit()

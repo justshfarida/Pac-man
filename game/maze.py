@@ -181,3 +181,27 @@ class Maze:
             turns[1] = True
 
         return turns  # Return allowed movements
+
+    
+    def get_neighbors(self, position: tuple) -> List[tuple]:
+        """Returns a list of valid neighboring positions (up, down, left, right) in grid coordinates."""
+        neighbors = []
+        x, y = position  # Unpack the tuple into x and y for grid coordinates
+
+        # Check for the neighbor to the left (if within bounds)
+        if x > 0 and self.grid[y][x - 1] != 3:  # Ensure it's not a wall (3 represents a wall)
+            neighbors.append((x - 1, y))  # Append as a tuple (x-1, y)
+
+        # Check for the neighbor to the right (if within bounds)
+        if x < len(self.grid[0]) - 1 and self.grid[y][x + 1] != 3:  # Ensure it's not a wall
+            neighbors.append((x + 1, y))
+
+        # Check for the neighbor above (if within bounds)
+        if y > 0 and self.grid[y - 1][x] != 3:  # Ensure it's not a wall
+            neighbors.append((x, y - 1))
+
+        # Check for the neighbor below (if within bounds)
+        if y < len(self.grid) - 1 and self.grid[y + 1][x] != 3:  # Ensure it's not a wall
+            neighbors.append((x, y + 1))
+
+        return neighbors

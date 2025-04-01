@@ -30,11 +30,12 @@ class Game:
         # Game Objects
         self.maze: Maze             = Maze()
         self.pacman: Pacman         = Pacman(starting_position=Position(16, 24), maze=self.maze)
+
     # (self, name, start_pos, color, speed, behavior, maze)
         
         self.ghosts: List[Ghost] = [
-        Ghost(Position(14, 14), "red", 2, "blinky", self.maze),   # Blinky (Chases)
-        Ghost(Position(14, 17), "pink", 2, "pinky", self.maze),   # Pinky (Predicts)
+        Ghost(Position(14, 15), "red", 2, "blinky", self.maze),   # Blinky (Chases)
+        Ghost(Position(14, 16), "pink", 2, "pinky", self.maze),   # Pinky (Predicts)
         Ghost(Position(12, 14), "blue", 2, "inky", self.maze),    # Inky (Weird movement)
         Ghost(Position(16, 14), "orange", 2, "clyde", self.maze), # Clyde (Runs away)
     ]
@@ -52,6 +53,7 @@ class Game:
         # Game Loop
         self.running: bool  = True
         self.paused: bool   = False
+        
 
     def draw_misc(self) -> None:
         score_text = self.font.render(f"Score {self.score}", True, 'white')
@@ -93,7 +95,7 @@ class Game:
             self.maze.draw(self.screen)
             self.pacman.draw(self.screen)
             for ghost in self.ghosts:
-                 ghost.draw(self.screen)
+                ghost.draw(self.screen)
             self.draw_misc()
 
             # Check for pellet and power pellet collisions
@@ -114,16 +116,22 @@ class Game:
                     elif event.key == pygame.K_p:
                         self.paused = True
                         self.pause_game()
-                        
 
+            # Move Pac-Man
             self.pacman.move()
-            
-            for ghost in self.ghosts:
-                ghost.move(self.pacman.get_position(), self.ghosts[0].get_position())  # Ensure ghosts move
+
+            # 👻 Only move Blinky (ghosts[0])
+            self.ghosts[0].move(self.pacman.get_position())
+            self.ghosts[0].check_collision_with_pacman(self.pacman)
+
+            # Optionally check collisions for the others (even if they don't move)
+            for ghost in self.ghosts[1:]:
+                ghost.check_collision_with_pacman(self.pacman)
 
             pygame.display.update()
 
-        pygame.quit()
+    pygame.quit()
+
 
 
 def main() -> None:

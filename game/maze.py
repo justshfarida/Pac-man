@@ -50,7 +50,8 @@ class Maze:
 [3, 7, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 8, 3],
 [7, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 8]
          ]
-              
+        print(f"Door tile at (14,13): {self.grid[13][14]}")
+
     def draw(
             self,
             screen: pygame.Surface
@@ -205,3 +206,18 @@ class Maze:
             neighbors.append((x, y + 1))
 
         return neighbors
+    def get_neighbors_for_ghost(self, position: tuple) -> List[tuple]:
+        """Ghosts can go through 0, 1, 2 (dots, big dots) and 9 (door)."""
+        neighbors = []
+        x, y = position
+        walkable = (0, 1, 2, 9)
+
+        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # L, R, U, D
+        for dx, dy in directions:
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < len(self.grid[0]) and 0 <= ny < len(self.grid):
+                if self.grid[ny][nx] in walkable:
+                    neighbors.append((nx, ny))
+
+        return neighbors
+

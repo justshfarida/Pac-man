@@ -298,7 +298,7 @@ class Ghost:
         pacman_rect = pygame.Rect(pacman.x - 18, pacman.y - 18, 36, 36)
 
         # Prevent "ghost inside wall" collision glitches
-        if not self.maze.get_neighbors(self.get_position()):
+        if not self.maze.get_neighbors_for_ghost(self.get_position()):
             return  # Ghost is stuck or in wall, don’t collide
 
         if self.rect.colliderect(pacman_rect):
@@ -308,6 +308,7 @@ class Ghost:
                 self.rect.center = (self.x, self.y)
             elif self.mode in ["chase", "scatter"]:
                 pacman.lose_life()
+                self.reset_position()
 
 
     def ghost_home_tile(self):
@@ -323,3 +324,8 @@ class Ghost:
         return (1, 1)
     def _is_centered(self):
      return self.x % TILE_LEN == self.y % TILE_LEN == TILE_LEN // 2
+    def reset_position(self):
+        """Resets Blinky's position to the starting point."""
+        self.x = 14 * TILE_LEN + TILE_LEN // 2
+        self.y = 15 * TILE_LEN + TILE_LEN // 2
+        self.rect.center = (self.x, self.y)

@@ -98,6 +98,9 @@ class Game:
                 ghost.draw(self.screen)
             self.draw_misc()
 
+            if self.pacman.check_game_over():
+                print("Game Over!")
+                break  # Stop the game loop
             # Check for pellet and power pellet collisions
             self.check_collisions()
 

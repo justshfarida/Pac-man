@@ -29,6 +29,7 @@ class Pacman(EntityInt):
         self.direction_command: Direction   = self.direction
         self.counter: int                   = 0
         self.turns: List[bool]              = [False, False, False, False]  # Ensure it's always initialized
+        self.lives: int = 3  # Pac-Man starts with 3 lives
 
         # Load Pac-Man images (animation frames)
         self.player_images: Dict[Direction, List[pygame.Surface]] = {
@@ -97,8 +98,18 @@ class Pacman(EntityInt):
         image = self.player_images[self.direction][frame_index]
         screen.blit(source=image, dest=dest)
     def lose_life(self):
-        print("💀 Pac-Man lost a life!")
-        self.alive = False
-        # Optionally reset position:
+        """Handle the logic when Pac-Man loses a life."""
+        self.lives -= 1
+        print(f"💀 Pac-Man lost a life! Lives remaining: {self.lives}")
+        if self.lives <= 0:
+            print("Game Over!")
+            # You can add additional logic to end the game, such as showing a Game Over screen.
+        else:
+            self.reset_position()
+    def check_game_over(self) -> bool:
+        """Checks if the game is over."""
+        return self.lives <= 0
+    def reset_position(self):
+        """Resets Pac-Man's position to the starting point."""
         self.x = 16 * TILE_LEN + TILE_LEN // 2
         self.y = 24 * TILE_LEN + TILE_LEN // 2

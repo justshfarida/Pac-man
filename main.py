@@ -34,12 +34,11 @@ class Game:
     # (self, name, start_pos, color, speed, behavior, maze)
         
         self.ghosts: List[Ghost] = [
-        Ghost(Position(14, 15), "red", 2, "blinky", self.maze),   # Blinky (Chases)
-        Ghost(Position(14, 16), "pink", 2, "pinky", self.maze),   # Pinky (Predicts)
-        Ghost(Position(12, 14), "blue", 2, "inky", self.maze),    # Inky (Weird movement)
-        Ghost(Position(16, 14), "orange", 2, "clyde", self.maze), # Clyde (Runs away)
+          Ghost(Position(14, 15), "red", 2, "blinky", self.maze),  # Blinky
+          Ghost(Position(14, 16), "pink", 2, "pinky", self.maze),  # Pinky (BFS)
+          Ghost(Position(12, 14), "blue", 2, "inky", self.maze),  # Inky (DFS)
+          Ghost(Position(16, 14), "orange", 2, "clyde", self.maze),  # Clyde
     ]
-
 
         # Initialize game state variables
         self.font: PygameFont           = pygame.font.Font("assets/fonts/ARCADE.TTF", 36)
@@ -123,13 +122,18 @@ class Game:
             # Move Pac-Man
             self.pacman.move()
 
-            # 👻 Only move Blinky (ghosts[0])
-            self.ghosts[0].move(self.pacman.get_position())
-            self.ghosts[0].check_collision_with_pacman(self.pacman)
-
-            # Optionally check collisions for the others (even if they don't move)
-            for ghost in self.ghosts[1:]:
+            for ghost in self.ghosts[:3]:  # Only move the first three ghosts
+                ghost.move(self.pacman.get_position())  # Pass Pac-Man's position to ghosts
                 ghost.check_collision_with_pacman(self.pacman)
+
+
+                # # 👻 Only move Blinky (ghosts[0])
+            # self.ghosts[0].move(self.pacman.get_position())
+            # self.ghosts[0].check_collision_with_pacman(self.pacman)
+
+            # # Optionally check collisions for the others (even if they don't move)
+            # for ghost in self.ghosts[1:]:
+            #     ghost.check_collision_with_pacman(self.pacman)
 
             pygame.display.update()
 

@@ -96,7 +96,8 @@ import heapq
 from game.structs import Direction
 from utils.settings import settings
 from typing import List, Dict
-
+import heapq
+from collections import deque
 TILE_LEN = settings.TILE_LEN
 
 
@@ -159,23 +160,33 @@ class Ghost:
         return (self.x // TILE_LEN, self.y // TILE_LEN)
 
     def move(self, pacman_pos, blinky_pos=None):
-    # Ghost is still waiting inside
         if self.mode == "waiting":
             self.leave_timer -= 1
             if self.leave_timer <= 0:
                 self.mode = "leaving_house"
+                self.target_pos = self.ghost_exit_tile()  # Ensure exit target is set
             return
 
         # Assign target based on mode
         if self.mode == "leaving_house":
+            # Check if the ghost has reached the exit
+            if self.get_position() == self.ghost_exit_tile():
+                print(f"{self.color.capitalize()} ghost has left the house.")
+                self.mode = "chase"  # Transition to chase once outside
+                return
+
+            # Otherwise, stay focused on exiting the house
             self.target_pos = self.ghost_exit_tile()
+
         elif self.mode == "chase":
             pacman_tile = (pacman_pos.x, pacman_pos.y)
+            
             if self.color == "red":
                 self.target_pos = pacman_tile
             elif self.color == "pink":
                 self.target_pos = self.predict_pacman_position(pacman_pos)
             elif self.color == "blue" and blinky_pos:
+                # Blue ghost logic depends on the position of Blinky and Pac-Man
                 self.target_pos = self.inky_logic(pacman_tile, blinky_pos)
             elif self.color == "orange":
                 self.target_pos = self.clyde_logic(pacman_tile)
@@ -184,9 +195,18 @@ class Ghost:
         if self._is_centered():
             current_tile = self.get_position()
             if current_tile != self.target_pos:
-                self.path = self.a_star_pathfinding()
+                if self.color == "blue":
+                    # Use A* pathfinding for the blue ghost to navigate the maze
+                    self.path = self.a_star_pathfinding()
+                else:
+                    # For other ghosts, use the appropriate algorithm
+                    self.path = self.bfs_pathfinding(current_tile, self.target_pos)
+
                 if not self.path:
                     print(f"[WARN] {self.color} ghost stuck at {current_tile}, can't reach {self.target_pos}")
+                    # Try to force the ghost out if it's stuck (you can adjust these conditions as needed)
+                    self.target_pos = self.ghost_exit_tile()
+
             else:
                 self.path = []  # Already at target, clear path
 
@@ -220,7 +240,6 @@ class Ghost:
             self.mode = "chase"
 
 
-   
 
     def move_to_tile(self, tile):
         self.x = tile[0] * TILE_LEN + TILE_LEN // 2
@@ -254,6 +273,38 @@ class Ghost:
 
         return []
 
+    def bfs_pathfinding(self, start, goal):
+        visited = set()
+        queue = deque([(start, [])])
+
+        while queue:
+            current, path = queue.popleft()
+            if current == goal:
+                return path
+
+            for neighbor in self.maze.get_neighbors_for_ghost(current):
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    queue.append((neighbor, path + [neighbor]))
+
+        return []
+
+    def dfs_pathfinding(self, start, goal):
+        visited = set()
+        stack = [(start, [])]
+
+        while stack:
+            current, path = stack.pop()
+
+            if current == goal:
+                return path
+
+            for neighbor in self.maze.get_neighbors_for_ghost(current):
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    stack.append((neighbor, path + [neighbor]))
+
+        return []
 
     def reconstruct_path(self, came_from, current):
         path = []
@@ -299,7 +350,7 @@ class Ghost:
 
         # Prevent "ghost inside wall" collision glitches
         if not self.maze.get_neighbors_for_ghost(self.get_position()):
-            return  # Ghost is stuck or in wall, don’t collide
+            return  # Ghost is stuck or in wall, don't collide
 
         if self.rect.colliderect(pacman_rect):
             if self.mode == "frightened":
@@ -307,8 +358,30 @@ class Ghost:
                 self.x, self.y = self.ghost_home_pixel()
                 self.rect.center = (self.x, self.y)
             elif self.mode in ["chase", "scatter"]:
+                # Reset Pac-Man's lives if hit
                 pacman.lose_life()
-                self.reset_position()
+                if pacman.lives > 0:
+                    print(f"Pac-Man lost a life! Lives remaining: {pacman.lives}")
+                    self.reset_ghosts()
+                else:
+                    print("Game Over!")
+                    # End the game if Pac-Man has no lives left
+                    self.game_over()
+
+    # def check_collision_with_pacman(self, pacman):
+    #     pacman_rect = pygame.Rect(pacman.x - 18, pacman.y - 18, 36, 36)
+
+    #     # Prevent "ghost inside wall" collision glitches
+    #     if not self.maze.get_neighbors_for_ghost(self.get_position()):
+    #         return  # Ghost is stuck or in wall, don’t collide
+
+    #     if self.rect.colliderect(pacman_rect):
+    #         if self.mode == "frightened":
+    #             self.mode = "eaten"
+    #             self.x, self.y = self.ghost_home_pixel()
+    #             self.rect.center = (self.x, self.y)
+    #         elif self.mode in ["chase", "scatter"]:
+    #             pacman.lose_life()
 
 
     def ghost_home_tile(self):
@@ -324,8 +397,14 @@ class Ghost:
         return (1, 1)
     def _is_centered(self):
      return self.x % TILE_LEN == self.y % TILE_LEN == TILE_LEN // 2
-    def reset_position(self):
-        """Resets Blinky's position to the starting point."""
-        self.x = 14 * TILE_LEN + TILE_LEN // 2
-        self.y = 15 * TILE_LEN + TILE_LEN // 2
-        self.rect.center = (self.x, self.y)
+    def reset_ghosts(self):
+    # Reset all ghosts to their home positions
+        for ghost in self.ghosts:
+            ghost.x, ghost.y = ghost.ghost_home_pixel()
+            ghost.rect.center = (ghost.x, ghost.y)
+            ghost.mode = "waiting"  # Reset the ghost's mode
+
+    def game_over(self):
+            # Implement logic for ending the game (e.g., show Game Over screen)
+        self.running = False
+        print("Game Over!")

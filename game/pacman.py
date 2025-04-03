@@ -29,6 +29,7 @@ class Pacman(EntityInt):
         self.direction_command: Direction   = self.direction
         self.counter: int                   = 0
         self.turns: List[bool]              = [False, False, False, False]  # Ensure it's always initialized
+        self.lives: int = 3  # Pac-Man starts with 3 lives
 
         # Load Pac-Man images (animation frames)
         self.player_images: Dict[Direction, List[pygame.Surface]] = {
@@ -51,8 +52,15 @@ class Pacman(EntityInt):
         return self.x % TILE_LEN == self.y % TILE_LEN == TILE_LEN//2
 
     def move(self) -> None:
-        """Moves Pac-Man in the allowed direction."""
-        # Check allowed movements
+        """Moves Pac-Man in the allowed direction, unless not alive (e.g., after being caught)."""
+
+        if not hasattr(self, "alive"):
+            self.alive = True  # Default to alive if not set
+
+        if not self.alive:
+            return  # Pac-Man was caught; don't move
+
+        # Check allowed movements at center of tile
         if self._is_centered():
             self.turns = self.maze.check_position(self.get_position())
 
@@ -68,11 +76,13 @@ class Pacman(EntityInt):
         elif self.direction == Direction.DOWN and self.turns[3]:
             self.y += self.speed
 
+        # Handle wrap-around logic
         x_pos = self.x // TILE_LEN
         if x_pos >= 30:
             self.x = 0 - TILE_LEN
         elif x_pos <= -2:
             self.x = settings.SCREEN_WIDTH
+
 
     def draw(
             self,
@@ -87,3 +97,16 @@ class Pacman(EntityInt):
         dest = (self.x - TILE_LEN//2, self.y - TILE_LEN//2)
         image = self.player_images[self.direction][frame_index]
         screen.blit(source=image, dest=dest)
+    def lose_life(self):
+        """Handle the logic when Pac-Man loses a life."""
+        self.lives -= 1
+        print(f"💀 Pac-Man lost a life! Lives remaining: {self.lives}")
+        if self.lives > 0:
+            self.reset_position()  # Reset Pac-Man's position after losing a life
+    def check_game_over(self) -> bool:
+        """Checks if the game is over."""
+        return self.lives <= 0
+    def reset_position(self):
+        """Resets Pac-Man's position to the starting point."""
+        self.x = 16 * TILE_LEN + TILE_LEN // 2
+        self.y = 24 * TILE_LEN + TILE_LEN // 2

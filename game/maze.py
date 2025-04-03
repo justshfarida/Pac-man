@@ -50,7 +50,8 @@ class Maze:
 [3, 7, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 8, 3],
 [7, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 8]
          ]
-              
+        print(f"Door tile at (14,13): {self.grid[13][14]}")
+
     def draw(
             self,
             screen: pygame.Surface
@@ -181,3 +182,42 @@ class Maze:
             turns[1] = True
 
         return turns  # Return allowed movements
+
+    
+    def get_neighbors(self, position: tuple) -> List[tuple]:
+        """Returns a list of valid neighboring positions (up, down, left, right) in grid coordinates."""
+        neighbors = []
+        x, y = position  # Unpack the tuple into x and y for grid coordinates
+
+        # Check for the neighbor to the left (if within bounds)
+        if x > 0 and self.grid[y][x - 1] != 3:  # Ensure it's not a wall (3 represents a wall)
+            neighbors.append((x - 1, y))  # Append as a tuple (x-1, y)
+
+        # Check for the neighbor to the right (if within bounds)
+        if x < len(self.grid[0]) - 1 and self.grid[y][x + 1] != 3:  # Ensure it's not a wall
+            neighbors.append((x + 1, y))
+
+        # Check for the neighbor above (if within bounds)
+        if y > 0 and self.grid[y - 1][x] != 3:  # Ensure it's not a wall
+            neighbors.append((x, y - 1))
+
+        # Check for the neighbor below (if within bounds)
+        if y < len(self.grid) - 1 and self.grid[y + 1][x] != 3:  # Ensure it's not a wall
+            neighbors.append((x, y + 1))
+
+        return neighbors
+    def get_neighbors_for_ghost(self, position: tuple) -> List[tuple]:
+        """Ghosts can go through 0, 1, 2 (dots, big dots) and 9 (door)."""
+        neighbors = []
+        x, y = position
+        walkable = (0, 1, 2, 9)  # Include door tile (9) as walkable
+
+        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Left, Right, Up, Down
+        for dx, dy in directions:
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < len(self.grid[0]) and 0 <= ny < len(self.grid):
+                if self.grid[ny][nx] in walkable:  # Check if the neighbor is walkable
+                    neighbors.append((nx, ny))
+
+        return neighbors
+

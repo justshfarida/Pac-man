@@ -34,9 +34,9 @@ class Game:
     # (self, name, start_pos, color, speed, behavior, maze)
         
         self.ghosts: List[Ghost] = [
-        #   Ghost(Position(14, 15), "red", 2, "blinky", self.maze, self),  # Blinky
-        #   Ghost(Position(14, 16), "pink", 2, "pinky", self.maze, self),  # Pinky (BFS)
-        #   Ghost(Position(12, 14), "blue", 2, "inky", self.maze, self),  # Inky (DFS)
+          Ghost(Position(14, 15), "red", 2, "blinky", self.maze, self),  # Blinky
+          Ghost(Position(14, 16), "pink", 2, "pinky", self.maze, self),  # Pinky (BFS)
+          Ghost(Position(12, 14), "blue", 2, "inky", self.maze, self),  # Inky (DFS)
           Ghost(Position(16, 14), "orange", 2, "clyde", self.maze, self),  # Clyde
     ]
 

@@ -128,6 +128,9 @@ class Ghost:
                     self.path = self.a_star_pathfinding()
                 elif self.color == "blue":
                     self.path = self.a_star_pathfinding()
+                elif self.color == "orange":
+                    self.path = self.a_star_pathfinding()
+
 
                 if not self.path:
                     print(f"[WARN] {self.color} ghost stuck at {current_tile}, can't reach {self.target_pos}")
@@ -242,26 +245,10 @@ class Ghost:
     def heuristic(self, pos, goal):
         return abs(pos[0] - goal[0]) + abs(pos[1] - goal[1])
 
-    # def predict_pacman_position(self, pacman_pos):
-    #     px, py = pacman_pos.x, pacman_pos.y
-    #     if self.direction == Direction.RIGHT:
-    #         return (px + 4, py)
-    #     elif self.direction == Direction.LEFT:
-    #         return (px - 4, py)
-    #     elif self.direction == Direction.UP:
-    #         return (px, py -4)
-    #     elif self.direction == Direction.DOWN:
-    #         return (px, py + 4)
-    #     return (px, py)
     
-#     from game.structs import Position
-# from utils.enums import Direction  # Assuming you have a Direction enum
 
     def predict_pacman_position(self, pacman_pos, pacman_dir, maze, max_steps=4): #-> tuple[int, int]:
-        """
-        Predicts up to 4 tiles ahead of Pac-Man. Falls back if tiles are invalid (walls or out of bounds).
-        Returns a valid tile (x, y).
-        """
+   
         direction_vectors = {
             Direction.RIGHT: (1, 0),
             Direction.LEFT:  (-1, 0),
@@ -285,13 +272,6 @@ class Ghost:
         return (px, py)
 
 
-    # def inky_logic(self, pacman_tile, blinky_tile):
-    #     px, py = pacman_tile
-    #     bx, by = blinky_tile
-    #     target_x = px + (px - bx)
-    #     target_y = py + (py - by)
-    #     return (target_x, target_y)
-    
     
     def inky_logic(self, pacman_pos, pacman_dir, blinky_pos, maze, max_map_size=(30, 31)):
 
@@ -334,7 +314,7 @@ class Ghost:
         distance = abs(px - cx) + abs(py - cy)
 
         if distance < 8:
-            return (0, len(self.maze.grid) - 1)
+            return (2,30)
         return pacman_tile
 
 

@@ -34,10 +34,10 @@ class Game:
     # (self, name, start_pos, color, speed, behavior, maze)
         
         self.ghosts: List[Ghost] = [
-          Ghost(Position(14, 15), "red", 2, "blinky", self.maze),  # Blinky
-          Ghost(Position(14, 16), "pink", 2, "pinky", self.maze),  # Pinky (BFS)
-          Ghost(Position(12, 14), "blue", 2, "inky", self.maze),  # Inky (DFS)
-          Ghost(Position(16, 14), "orange", 2, "clyde", self.maze),  # Clyde
+          Ghost(Position(14, 15), "red", 2, "blinky", self.maze, self),  # Blinky
+          Ghost(Position(14, 16), "pink", 2, "pinky", self.maze, self),  # Pinky (BFS)
+          Ghost(Position(12, 14), "blue", 2, "inky", self.maze, self),  # Inky (DFS)
+          Ghost(Position(16, 14), "orange", 2, "clyde", self.maze, self),  # Clyde
     ]
 
         # Initialize game state variables
@@ -52,7 +52,16 @@ class Game:
         # Game Loop
         self.running: bool  = True
         self.paused: bool   = False
-        
+    def reset_ghosts(self):
+        # Reset all ghosts to their home positions
+        for ghost in self.ghosts:
+            ghost.x, ghost.y = ghost.ghost_home_pixel()
+            ghost.rect.center = (ghost.x, ghost.y)
+            ghost.mode = "waiting"  # Reset the ghost's mode
+
+    def check_collision_with_pacman(self, pacman):
+        for ghost in self.ghosts:
+            ghost.check_collision_with_pacman(pacman)
 
     def draw_misc(self) -> None:
         score_text = self.font.render(f"Score {self.score}", True, 'white')

@@ -210,13 +210,13 @@ class Maze:
         """Ghosts can go through 0, 1, 2 (dots, big dots) and 9 (door)."""
         neighbors = []
         x, y = position
-        walkable = (0, 1, 2, 9)
+        walkable = (0, 1, 2, 9)  # Include door tile (9) as walkable
 
-        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # L, R, U, D
+        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Left, Right, Up, Down
         for dx, dy in directions:
             nx, ny = x + dx, y + dy
             if 0 <= nx < len(self.grid[0]) and 0 <= ny < len(self.grid):
-                if self.grid[ny][nx] in walkable:
+                if self.grid[ny][nx] in walkable:  # Check if the neighbor is walkable
                     neighbors.append((nx, ny))
 
         return neighbors

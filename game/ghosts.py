@@ -23,6 +23,7 @@ class Ghost:
         self.maze = maze
         self.game = game
         self.path = []
+        self.last_pacman_dir = None
 
         ghost_leave_times = {
             "red": 0,
@@ -81,6 +82,7 @@ class Ghost:
             if self.get_position() == self.ghost_exit_tile():
                 print(f"{self.color.capitalize()} ghost has left the house.")
                 self.mode = "chase"  # Transition to chase once outside
+                print(f"{self.color.capitalize()} ghost has enetered chase mode.")
                 return
             self.target_pos = self.ghost_exit_tile()
 
@@ -90,9 +92,29 @@ class Ghost:
             if self.color == "red":
                 self.target_pos = pacman_tile
             elif self.color == "pink":
-                self.target_pos = self.predict_pacman_position(pacman_pos)
-            elif self.color == "blue" and blinky_pos:
-                self.target_pos = self.inky_logic(pacman_tile, blinky_pos)
+                
+#####################################################
+                pacman_dir = self.game.pacman.direction
+                
+                if self.last_pacman_dir != pacman_dir or self.target_pos is None:
+                    self.last_pacman_dir = pacman_dir
+                    self.target_pos = self.predict_pacman_position(
+                        pacman_pos,
+                        pacman_dir,
+                        self.maze
+                    )
+                            
+     ##################################           
+                # self.target_pos = self.predict_pacman_position(pacman_pos)
+            # elif self.color == "blue" and blinky_pos:
+            elif self.color == "blue":
+                print(blinky_pos)
+                self.target_pos = self.inky_logic(
+                                                        pacman_pos=self.game.pacman.get_position() ,
+                                                        pacman_dir=self.game.pacman.direction,
+                                                        blinky_pos=blinky_pos,
+                                                        maze=self.maze
+                                                    )
             elif self.color == "orange":
                 self.target_pos = self.clyde_logic(pacman_tile)
 
@@ -103,9 +125,9 @@ class Ghost:
                 if self.color == "red":
                     self.path = self.a_star_pathfinding()
                 elif self.color == "pink":
-                    self.path = self.bfs_pathfinding(current_tile, self.target_pos)
+                    self.path = self.a_star_pathfinding()
                 elif self.color == "blue":
-                    self.path = self.dfs_pathfinding(current_tile, self.target_pos)
+                    self.path = self.a_star_pathfinding()
 
                 if not self.path:
                     print(f"[WARN] {self.color} ghost stuck at {current_tile}, can't reach {self.target_pos}")
@@ -142,6 +164,7 @@ class Ghost:
         if self.mode == "leaving_house" and self.get_position() == self.ghost_exit_tile():
             print(f"{self.color.capitalize()} ghost has left the house.")
             self.mode = "chase"
+       
 
     def move_to_tile(self, tile):
         self.x = tile[0] * TILE_LEN + TILE_LEN // 2
@@ -165,7 +188,7 @@ class Ghost:
                 return self.reconstruct_path(came_from, current)
 
             for neighbor in self.maze.get_neighbors_for_ghost(current):
-                print(f"[A*] {self.color} ghost neighbors at {current}: {self.maze.get_neighbors_for_ghost(current)}")
+                # print(f"[A*] {self.color} ghost neighbors at {current}: {self.maze.get_neighbors_for_ghost(current)}")
                 temp_g_score = g_score[current] + 1
                 if neighbor not in g_score or temp_g_score < g_score[neighbor]:
                     came_from[neighbor] = current
@@ -219,32 +242,101 @@ class Ghost:
     def heuristic(self, pos, goal):
         return abs(pos[0] - goal[0]) + abs(pos[1] - goal[1])
 
-    def predict_pacman_position(self, pacman_pos):
+    # def predict_pacman_position(self, pacman_pos):
+    #     px, py = pacman_pos.x, pacman_pos.y
+    #     if self.direction == Direction.RIGHT:
+    #         return (px + 4, py)
+    #     elif self.direction == Direction.LEFT:
+    #         return (px - 4, py)
+    #     elif self.direction == Direction.UP:
+    #         return (px, py -4)
+    #     elif self.direction == Direction.DOWN:
+    #         return (px, py + 4)
+    #     return (px, py)
+    
+#     from game.structs import Position
+# from utils.enums import Direction  # Assuming you have a Direction enum
+
+    def predict_pacman_position(self, pacman_pos, pacman_dir, maze, max_steps=4): #-> tuple[int, int]:
+        """
+        Predicts up to 4 tiles ahead of Pac-Man. Falls back if tiles are invalid (walls or out of bounds).
+        Returns a valid tile (x, y).
+        """
+        direction_vectors = {
+            Direction.RIGHT: (1, 0),
+            Direction.LEFT:  (-1, 0),
+            Direction.UP:    (0, -1),
+            Direction.DOWN:  (0, 1),
+        }
+
+        dx, dy = direction_vectors.get(pacman_dir, (0, 0))
         px, py = pacman_pos.x, pacman_pos.y
-        if self.direction == Direction.RIGHT:
-            return (px + 1, py)
-        elif self.direction == Direction.LEFT:
-            return (px - 1, py)
-        elif self.direction == Direction.UP:
-            return (px, py - 1)
-        elif self.direction == Direction.DOWN:
-            return (px, py + 1)
+
+        for steps in range(max_steps, 0, -1):
+            tx = px + dx * steps
+            ty = py + dy * steps
+
+            # Bounds check
+            if 0 <= ty < len(maze.grid) and 0 <= tx < len(maze.grid[0]):
+                if maze.grid[ty][tx] != 3:  # Not a wall
+                    return (tx, ty)
+
+        # All ahead tiles are walls or out-of-bounds → fallback to Pac-Man’s current tile
         return (px, py)
 
-    def inky_logic(self, pacman_tile, blinky_tile):
-        px, py = pacman_tile
-        bx, by = blinky_tile
-        target_x = px + (px - bx)
-        target_y = py + (py - by)
+
+    # def inky_logic(self, pacman_tile, blinky_tile):
+    #     px, py = pacman_tile
+    #     bx, by = blinky_tile
+    #     target_x = px + (px - bx)
+    #     target_y = py + (py - by)
+    #     return (target_x, target_y)
+    
+    
+    def inky_logic(self, pacman_pos, pacman_dir, blinky_pos, maze, max_map_size=(30, 31)):
+
+        # Step 1: 2 tiles ahead of Pac-Man
+        direction_vectors = {
+            Direction.RIGHT: (1, 0),
+            Direction.LEFT:  (-1, 0),
+            Direction.UP:    (0, -1),
+            Direction.DOWN:  (0, 1),
+        }
+
+        dx, dy = direction_vectors.get(pacman_dir, (0, 0))
+        ahead_x = pacman_pos.x + dx * 2
+        ahead_y = pacman_pos.y + dy * 2
+
+        # Step 2: Vector from Blinky to 2-ahead position
+        vx = ahead_x - blinky_pos[0]
+        vy = ahead_y - blinky_pos[1]
+
+        # Step 3: Double the vector and get final target
+        target_x = blinky_pos[0] + 2 * vx
+        target_y = blinky_pos[1] + 2 * vy
+
+        # Step 4: Optional – keep within map bounds
+        max_x, max_y = max_map_size
+        target_x = max(0, min(target_x, max_x - 1))
+        target_y = max(0, min(target_y, max_y - 1))
+
+        # Step 5: Optional – make sure it's not a wall
+        if maze.grid[target_y][target_x] == 3:
+            # fallback to a nearby walkable tile or Pac-Man
+            return (pacman_pos.x, pacman_pos.y)
+
         return (target_x, target_y)
+
 
     def clyde_logic(self, pacman_tile):
         px, py = pacman_tile
         cx, cy = self.get_position()
         distance = abs(px - cx) + abs(py - cy)
+
         if distance < 8:
-            return (0, settings.SCREEN_HEIGHT // TILE_LEN)
+            return (0, len(self.maze.grid) - 1)
         return pacman_tile
+
 
     def check_collision_with_pacman(self, pacman):
         pacman_rect = pygame.Rect(pacman.x - 18, pacman.y - 18, 36, 36)

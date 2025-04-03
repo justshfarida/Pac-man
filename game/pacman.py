@@ -101,23 +101,8 @@ class Pacman(EntityInt):
         """Handle the logic when Pac-Man loses a life."""
         self.lives -= 1
         print(f"💀 Pac-Man lost a life! Lives remaining: {self.lives}")
-        if self.lives <= 0:
-            print("Game Over!")
-            # End the game if Pac-Man has no lives left
-            self.game_over()
-        else:
+        if self.lives > 0:
             self.reset_position()  # Reset Pac-Man's position after losing a life
-            self.reset_ghosts()  # Reset all ghosts as well
-
-    def lose_life(self):
-        """Handle the logic when Pac-Man loses a life."""
-        self.lives -= 1
-        print(f"💀 Pac-Man lost a life! Lives remaining: {self.lives}")
-        if self.lives <= 0:
-            print("Game Over!")
-            # You can add additional logic to end the game, such as showing a Game Over screen.
-        else:
-            self.reset_position()
     def check_game_over(self) -> bool:
         """Checks if the game is over."""
         return self.lives <= 0

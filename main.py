@@ -34,11 +34,19 @@ class Game:
     # (self, name, start_pos, color, speed, behavior, maze)
         
         self.ghosts: List[Ghost] = [
+<<<<<<< Updated upstream
           Ghost(Position(14, 15), "red", 2, "blinky", self.maze, self),  # Blinky
           Ghost(Position(14, 16), "pink", 2, "pinky", self.maze, self),  # Pinky (BFS)
           Ghost(Position(12, 14), "blue", 2, "inky", self.maze, self),  # Inky (DFS)
           Ghost(Position(16, 14), "orange", 2, "clyde", self.maze, self),  # Clyde
     ]
+=======
+            Ghost(Position(14, 15), "red", "astar", 2, "blinky", self.maze, self),  # Blinky
+            Ghost(Position(14, 16), "pink", "astar",  2, "pinky", self.maze, self),  # Pinky (BFS)
+            Ghost(Position(12, 14), "blue","astar",  2, "inky", self.maze, self),  # Inky (DFS)
+            Ghost(Position(16, 14), "orange", "astar", 2, "clyde", self.maze, self),  # Clyde
+        ]
+>>>>>>> Stashed changes
 
         # Initialize game state variables
         self.font: PygameFont           = pygame.font.Font("assets/fonts/ARCADE.TTF", 36)
@@ -48,6 +56,7 @@ class Game:
         self.eaten_ghosts: List[bool]   = [False, False, False, False]
         self.moving: bool               = False
         self.startup_counter: int       = 0
+        self.power_start_time: int          = None
 
         # Game Loop
         self.running: bool  = True
@@ -58,6 +67,7 @@ class Game:
         self.screen.blit(game_over_text, text_rect)
 
     def reset_ghosts(self):
+<<<<<<< Updated upstream
     # Define the initial positions of each ghost by color
         initial_positions = {
             "red": Position(14, 15),  # Blinky's initial position
@@ -67,6 +77,9 @@ class Game:
         }
         
         # Define the leave times for each ghost (in frames or time units)
+=======
+
+>>>>>>> Stashed changes
         ghost_leave_times = {
             "red": 0,      # Blinky leaves immediately
             "pink": 180,   # Pinky leaves after 180 units of time
@@ -75,8 +88,13 @@ class Game:
         }
         
         for ghost in self.ghosts:
+<<<<<<< Updated upstream
             initial_position = initial_positions.get(ghost.color)
             
+=======
+            initial_position = ghost.ghost_home_tile()
+
+>>>>>>> Stashed changes
             if initial_position:
                 ghost.x = initial_position.x * TILE_LEN + TILE_LEN // 2
                 ghost.y = initial_position.y * TILE_LEN + TILE_LEN // 2
@@ -114,7 +132,32 @@ class Game:
                 self.score += 50
                 self.power = True
                 self.power_count = 0
-                self.eaten_ghosts = [False, False, False, False]  # Reset eaten ghosts
+                self.activate_frightened_mode()
+                
+                # Ensure that target positions are set to None to prevent errors
+                for ghost in self.ghosts:
+                    ghost.target_pos = None 
+                # self.eaten_ghosts = [False, False, False, False]  # Reset eaten ghosts
+                
+    def activate_frightened_mode(self):
+      
+        self.power = True  # Set power mode to active
+        self.power_count = 0  
+        self.eaten_ghosts = [False, False, False, False] 
+        self.power_start_time = pygame.time.get_ticks()
+        # Set all ghosts to 'frightened' mode
+        for ghost in self.ghosts:
+            ghost.mode = "frightened"  # Ghosts are now in frightened mode
+            
+           
+            # ghost.speed = ghost.normal_speed // 2  # Slow down ghosts in frightened mode
+    def deactivate_frightened_mode(self):
+        self.power = False 
+        for ghost in self.ghosts:
+            if ghost.mode == "frightened":
+                ghost.mode = "chase"  
+              
+                # ghost.speed = ghost.normal_speed  # Restore normal speed
 
     def pause_game(self) -> None:
         while self.paused:
@@ -126,6 +169,29 @@ class Game:
                     if event.key == pygame.K_p:  # Press 'P' to resume
                         self.paused = False
 
+<<<<<<< Updated upstream
+=======
+    def restart_game(self):
+    # Reset all game variables and objects
+        self.pacman = Pacman(starting_position=Position(16, 24), maze=self.maze)
+        self.ghosts = [
+            Ghost(Position(14, 15), "red", 2, "blinky", self.maze, self),  # Blinky
+            Ghost(Position(14, 16), "pink", 2, "pinky", self.maze, self),  # Pinky
+            Ghost(Position(12, 14), "blue", 2, "inky", self.maze, self),  # Inky
+            Ghost(Position(16, 14), "orange", 2, "clyde", self.maze, self),  # Clyde
+        ]
+        self.score = 0
+        self.power = False
+        self.power_count = 0
+        self.eaten_ghosts = [False, False, False, False]
+
+        # Reset maze grid to its initial state
+        self.maze = Maze()  
+        # Reset ghosts' positions
+        self.reset_ghosts()
+
+
+>>>>>>> Stashed changes
     def run(self) -> None:
         while self.running:
             self.timer.tick(self.fps)
@@ -137,14 +203,24 @@ class Game:
             for ghost in self.ghosts:
                 ghost.draw(self.screen)
             self.draw_misc()
+            
+            
+            self.check_collisions()
+            if self.power:
+                elapsed_time = pygame.time.get_ticks() - self.power_start_time  # Time elapsed since power pellet was eaten
+            
+                # Deactivate power pellet effect after 10 seconds (10000 milliseconds)
+                if elapsed_time > 10000:  # 10 seconds
+                    self.deactivate_frightened_mode()
 
+            
             if self.pacman.check_game_over():
                 self.display_game_over()  # Display "GAME OVER"
                 pygame.display.flip()  # Update the screen to show the new text
                 pygame.time.wait(3000)  # Optional: wait for 3 seconds before closing (adjust time as needed)
                 break  # Stop the game loop
             # Check for pellet and power pellet collisions
-            self.check_collisions()
+            
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:

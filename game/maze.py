@@ -187,7 +187,7 @@ class Maze:
     def get_neighbors(self, position: tuple) -> List[tuple]:
         """Returns a list of valid neighboring positions (up, down, left, right) in grid coordinates."""
         neighbors = []
-        x, y = position  # Unpack the tuple into x and y for grid coordinates
+        x, y = position 
 
         # Check for the neighbor to the left (if within bounds)
         if x > 0 and self.grid[y][x - 1] != 3:  # Ensure it's not a wall (3 represents a wall)
@@ -210,7 +210,7 @@ class Maze:
         """Ghosts can go through 0, 1, 2 (dots, big dots) and 9 (door)."""
         neighbors = []
         x, y = position
-        walkable = (0, 1, 2, 9)  # Include door tile (9) as walkable
+        walkable = (0, 1, 2, 9)  
 
         directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Left, Right, Up, Down
         for dx, dy in directions:

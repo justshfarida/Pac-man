@@ -1,16 +1,17 @@
 import pygame
 import heapq
-from game.structs import Direction
+from game.structs import Direction, Position
 from utils.settings import settings
 from typing import List, Dict
 import heapq
+import random
 from collections import deque
 
 TILE_LEN = settings.TILE_LEN
 
 
 class Ghost:
-    def __init__(self, start_pos, color, speed, behavior, maze, game):
+    def __init__(self, start_pos, color, pathfinding_algorithm, speed, behavior, maze, game):
         self.x = start_pos.x * TILE_LEN + TILE_LEN // 2
         self.y = start_pos.y * TILE_LEN + TILE_LEN // 2
         self.rect = pygame.Rect(self.x - 18, self.y - 18, 36, 36)
@@ -18,6 +19,7 @@ class Ghost:
         self.speed = speed
         self.color = color
         self.behavior = behavior
+        self.pathfinding_algorithm = pathfinding_algorithm
         self.counter = 0
         self.ghost_images: Dict[str, pygame.Surface] = {}
         self.maze = maze
@@ -25,13 +27,8 @@ class Ghost:
         self.path = []
         self.last_pacman_dir = None
 
-        ghost_leave_times = {
-            "red": 0,
-            "pink": 180,
-            "blue": 360,
-            "orange": 540
-        }
-        self.leave_timer = ghost_leave_times.get(self.color, 0)
+        
+        self.leave_timer = self.set_ghost_leave_times()
         self.mode = "waiting"
         self.target_pos = None
 
@@ -68,13 +65,14 @@ class Ghost:
 
     def get_position(self) -> tuple:
         return (self.x // TILE_LEN, self.y // TILE_LEN)
+    
 
     def move(self, pacman_pos, blinky_pos=None):
         if self.mode == "waiting":
             self.leave_timer -= 1
             if self.leave_timer <= 0:
                 self.mode = "leaving_house"
-                self.target_pos = self.ghost_exit_tile()  # Ensure exit target is set
+                self.target_pos = self.ghost_exit_tile()  
             return
 
         # Assign target based on mode
@@ -93,7 +91,6 @@ class Ghost:
                 self.target_pos = pacman_tile
             elif self.color == "pink":
                 
-#####################################################
                 pacman_dir = self.game.pacman.direction
                 
                 if self.last_pacman_dir != pacman_dir or self.target_pos is None:
@@ -104,9 +101,7 @@ class Ghost:
                         self.maze
                     )
                             
-     ##################################           
-                # self.target_pos = self.predict_pacman_position(pacman_pos)
-            # elif self.color == "blue" and blinky_pos:
+
             elif self.color == "blue":
                 print(blinky_pos)
                 self.target_pos = self.inky_logic(
@@ -117,19 +112,29 @@ class Ghost:
                                                     )
             elif self.color == "orange":
                 self.target_pos = self.clyde_logic(pacman_tile)
+                
+        elif self.mode == "frightened":
+              self.target_pos = self.random_target()
+              
+        elif self.mode == "eaten":
+            # self.speed =  self.speed*2
 
+        
+            self.target_pos = self.ghost_home_tile() 
         # If ghost is centered on a tile, compute new path if needed
         if self._is_centered():
             current_tile = self.get_position()
             if current_tile != self.target_pos:
-                if self.color == "red":
+                # if self.mode != "frightened":
+                if self.pathfinding_algorithm == 'astar':
                     self.path = self.a_star_pathfinding()
-                elif self.color == "pink":
-                    self.path = self.a_star_pathfinding()
-                elif self.color == "blue":
-                    self.path = self.a_star_pathfinding()
-                elif self.color == "orange":
-                    self.path = self.a_star_pathfinding()
+                elif self.pathfinding_algorithm == 'dfs':
+                    self.path = self.dfs_pathfinding()
+                elif self.pathfinding_algorithm == 'bfs':
+                    self.path = self.bfs_pathfinding()
+                # else:  
+                #     self.path = self.random_pathfinding()
+
 
 
                 if not self.path:
@@ -141,7 +146,9 @@ class Ghost:
 
         # Move toward next tile in path
         if self.path:
-            next_tile = self.path[0]
+# Move toward next tile in path
+
+            next_tile = self.path[0]  # Get the next position from the path
             next_px = next_tile[0] * TILE_LEN + TILE_LEN // 2
             next_py = next_tile[1] * TILE_LEN + TILE_LEN // 2
 
@@ -161,19 +168,29 @@ class Ghost:
 
             # If centered and reached tile, remove it from path
             if self._is_centered() and self.get_position() == next_tile:
-                self.path.pop(0)
-
+                self.path.pop(0)  # Move to the next tile in the path
+        
+        # else:
+              
+        #     self.path = self.random_pathfinding()
+        #     print(f"Path in frightened mode: {self.path}") 
         # Transition to chase mode once outside
         if self.mode == "leaving_house" and self.get_position() == self.ghost_exit_tile():
             print(f"{self.color.capitalize()} ghost has left the house.")
             self.mode = "chase"
-       
+            
+        if self.mode == "eaten" and self.get_position() == self.ghost_home_tile():
+                self.mode = "waiting"
+                # self.speed =  self.speed//2
+                self.leave_timer = self.set_ghost_leave_times()          
 
     def move_to_tile(self, tile):
         self.x = tile[0] * TILE_LEN + TILE_LEN // 2
         self.y = tile[1] * TILE_LEN + TILE_LEN // 2
         self.rect.center = (self.x, self.y)
 
+
+  
     def a_star_pathfinding(self):
         start = self.get_position()
         goal = self.target_pos
@@ -234,6 +251,12 @@ class Ghost:
 
         return []
 
+
+    def random_target(self):
+        predefined_targets = [(27, 29), (2, 29), (22, 7), (15, 12)]
+        return random.choice(predefined_targets)
+    
+
     def reconstruct_path(self, came_from, current):
         path = []
         while current in came_from:
@@ -265,17 +288,17 @@ class Ghost:
 
             # Bounds check
             if 0 <= ty < len(maze.grid) and 0 <= tx < len(maze.grid[0]):
-                if maze.grid[ty][tx] != 3:  # Not a wall
+                if maze.grid[ty][tx] != 3:  
                     return (tx, ty)
 
-        # All ahead tiles are walls or out-of-bounds → fallback to Pac-Man’s current tile
+        # If all ahead tiles are walls or out-of-bounds, fallback to Pac-Man’s current tile
         return (px, py)
 
 
     
     def inky_logic(self, pacman_pos, pacman_dir, blinky_pos, maze, max_map_size=(30, 31)):
 
-        # Step 1: 2 tiles ahead of Pac-Man
+        # 2 tiles ahead of Pac-Man
         direction_vectors = {
             Direction.RIGHT: (1, 0),
             Direction.LEFT:  (-1, 0),
@@ -287,20 +310,20 @@ class Ghost:
         ahead_x = pacman_pos.x + dx * 2
         ahead_y = pacman_pos.y + dy * 2
 
-        # Step 2: Vector from Blinky to 2-ahead position
+        # Vector from Blinky to 2-ahead position
         vx = ahead_x - blinky_pos[0]
         vy = ahead_y - blinky_pos[1]
 
-        # Step 3: Double the vector and get final target
+        # Double the vector and get final target
         target_x = blinky_pos[0] + 2 * vx
         target_y = blinky_pos[1] + 2 * vy
 
-        # Step 4: Optional – keep within map bounds
+        #Keep target within map bounds
         max_x, max_y = max_map_size
         target_x = max(0, min(target_x, max_x - 1))
         target_y = max(0, min(target_y, max_y - 1))
 
-        # Step 5: Optional – make sure it's not a wall
+        #Make sure target is not a wall
         if maze.grid[target_y][target_x] == 3:
             # fallback to a nearby walkable tile or Pac-Man
             return (pacman_pos.x, pacman_pos.y)
@@ -321,15 +344,16 @@ class Ghost:
     def check_collision_with_pacman(self, pacman):
         pacman_rect = pygame.Rect(pacman.x - 18, pacman.y - 18, 36, 36)
 
-        # Prevent "ghost inside wall" collision glitches
+        # prevent "ghost inside wall" collision glitches
         if not self.maze.get_neighbors_for_ghost(self.get_position()):
-            return  # Ghost is stuck or in wall, don't collide
+            return  # ghost is stuck or in wall, don't collide
 
         if self.rect.colliderect(pacman_rect):
             if self.mode == "frightened":
                 self.mode = "eaten"
-                self.x, self.y = self.ghost_home_pixel()
-                self.rect.center = (self.x, self.y)
+                ghost_index = self.game.ghosts.index(self)
+                self.game.eaten_ghosts[ghost_index] = True
+                # self.rect.center = (self.x, self.y)
             elif self.mode in ["chase", "scatter"]:
                 pacman.lose_life()
                 if pacman.lives > 0:
@@ -340,7 +364,28 @@ class Ghost:
                     self.game_over()
 
     def ghost_home_tile(self):
-        return (14, 14)
+        initial_positions = {
+            "red": (14, 15),  # Blinky's initial position
+            "pink": (14, 16),  # Pinky's initial position
+            "blue": (12, 14),  # Inky's initial position
+            "orange":(16, 14) # Clyde's initial position
+        }
+        
+        
+        return initial_positions.get(self.color, (14, 15))
+        
+    def set_ghost_leave_times(self):
+        
+        ghost_leave_times = {
+            "red": 0,      # Blinky leaves immediately
+            "pink": 180,   # Pinky leaves after 180 units of time
+            "blue": 360,   # Inky leaves after 360 units of time
+            "orange": 540  # Clyde leaves after 540 units of time
+        }
+
+        return ghost_leave_times.get(self.color, 0) 
+        
+
 
     def ghost_exit_tile(self):
         return (14, 13)

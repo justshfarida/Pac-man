@@ -206,7 +206,8 @@ class Maze:
             neighbors.append((x, y + 1))
 
         return neighbors
-    def get_neighbors_for_ghost(self, position: tuple) -> List[tuple]:
+
+    def get_neighbors_for_ghost(self, position: Position) -> List[tuple]:
         """Ghosts can go through 0, 1, 2 (dots, big dots) and 9 (door)."""
         neighbors = []
         x, y = position

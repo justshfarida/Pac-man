@@ -4,27 +4,27 @@ from typing import List, TYPE_CHECKING, Dict
 
 import pygame
 
-from game.abstract import EntityInt
+from game.abstract import EntityInt, EntityMethods
 from game.structs import Direction
 from utils.settings import settings
+from game.structs import Position
 
 if TYPE_CHECKING:
     from game.maze import Maze
-    from game.structs import Position
 
 TILE_LEN = settings.TILE_LEN
 
 
-class Pacman(EntityInt):
+class Pacman(EntityInt, EntityMethods):
     def __init__(
             self,
             starting_position: Position,
             maze: Maze
     ) -> None:
-        self.x: int                         = starting_position.x * TILE_LEN + TILE_LEN//2
-        self.y: int                         = starting_position.y * TILE_LEN + TILE_LEN//2
+        self.set_position(starting_position)
+
         self.maze: Maze                     = maze
-        self.speed: int                     = 2 # TODO: There is a bug when odd number used as speed
+        self.speed: int                     = 4 # TODO: There is a bug when odd number used as speed
         self.direction: Direction           = Direction.RIGHT
         self.direction_command: Direction   = self.direction
         self.counter: int                   = 0
@@ -47,11 +47,7 @@ class Pacman(EntityInt):
             self.player_images[Direction.DOWN].append(pygame.transform.rotate(scaled, 270))
             self.player_images[Direction.UP].append(pygame.transform.rotate(scaled, 90))
 
-
-    def _is_centered(self) -> bool:
-        return self.x % TILE_LEN == self.y % TILE_LEN == TILE_LEN//2
-
-    def move(self) -> None:
+    def move(self, *args, **kwargs) -> None:
         """Moves Pac-Man in the allowed direction, unless not alive (e.g., after being caught)."""
 
         if not hasattr(self, "alive"):
@@ -97,16 +93,18 @@ class Pacman(EntityInt):
         dest = (self.x - TILE_LEN//2, self.y - TILE_LEN//2)
         image = self.player_images[self.direction][frame_index]
         screen.blit(source=image, dest=dest)
+
     def lose_life(self):
         """Handle the logic when Pac-Man loses a life."""
         self.lives -= 1
         print(f"💀 Pac-Man lost a life! Lives remaining: {self.lives}")
         if self.lives > 0:
             self.reset_position()  # Reset Pac-Man's position after losing a life
+
     def check_game_over(self) -> bool:
         """Checks if the game is over."""
         return self.lives <= 0
+
     def reset_position(self):
         """Resets Pac-Man's position to the starting point."""
-        self.x = 16 * TILE_LEN + TILE_LEN // 2
-        self.y = 24 * TILE_LEN + TILE_LEN // 2
+        self.set_position(Position(16, 24))

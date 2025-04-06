@@ -21,3 +21,6 @@ class Color:
 
 
 settings = Settings()
+
+def get_settings() -> Settings:
+    return settings

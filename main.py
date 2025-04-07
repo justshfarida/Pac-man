@@ -58,7 +58,6 @@ class Game:
                 start_pos=Position(14, 15),
                 color="red",
                 pathfinding_algorithm=AStar,
-                speed=2,
                 behavior=Blinky(),
                 maze=self.maze,
                 game=self
@@ -67,7 +66,6 @@ class Game:
                 start_pos=Position(14, 16),
                 color="pink",
                 pathfinding_algorithm=AStar,
-                speed=2,
                 behavior=Pinky(self.maze),
                 maze=self.maze,
                 game=self,
@@ -76,7 +74,6 @@ class Game:
                 start_pos=Position(12, 14),
                 color="blue",
                 pathfinding_algorithm=AStar,
-                speed=2,
                 behavior=Inky(maze=self.maze, blinky=blinky),
                 maze=self.maze,
                 game=self
@@ -85,7 +82,6 @@ class Game:
                 start_pos=Position(16, 14),
                 color="orange",
                 pathfinding_algorithm=AStar,
-                speed=2,
                 behavior=Clyde(),
                 maze=self.maze,
                 game=self,

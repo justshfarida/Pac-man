@@ -39,32 +39,32 @@ class Ghost(EntityInt, EntityMethods):
             start_pos: Position,
             color,
             pathfinding_algorithm: PathFinderInt,
-            speed,
             behavior: BehaviourInt,
             maze,
             game,
+            speed: int = settings.GHOST_SPEED,
     ):
-        self._initial_position = start_pos
-        self._modes = GhostModes
+        self._initial_position      = start_pos
+        self._modes                 = GhostModes
 
         self.set_position(start_pos)
-        self.rect = pygame.Rect(self.x - 18, self.y - 18, 36, 36)
-        self.direction = Direction.LEFT
-        self.speed = speed
-        self.color = color
-        self.behavior = behavior
-        self.pathfinding_algorithm = pathfinding_algorithm
-        self.counter = 0
+        self.rect                   = pygame.Rect(self.x - 18, self.y - 18, 36, 36)
+        self.direction              = Direction.LEFT
+        self.speed                  = speed
+        self.color                  = color
+        self.behavior               = behavior
+        self.pathfinding_algorithm  = pathfinding_algorithm
+        self.counter                = 0
         self.ghost_images: Dict[str, pygame.Surface] = {}
-        self.maze = maze
-        self.game = game
-        self.path = []
-        self.last_pacman_dir = None
+        self.maze                   = maze
+        self.game                   = game
+        self.path                   = []
+        self.last_pacman_dir        = None
 
         
-        self.leave_timer = self.get_leave_time()
-        self.mode = self._modes.Waiting
-        self.target_pos = None
+        self.leave_timer            = self.get_leave_time()
+        self.mode                   = self._modes.Waiting
+        self.target_pos             = None
 
         self._load_images()
 
@@ -98,8 +98,10 @@ class Ghost(EntityInt, EntityMethods):
                 print(f"{self.color.capitalize()} ghost has enetered chase mode.")
                 return
             self.target_pos = self.ghost_exit_tile()
+
         elif self.mode == self._modes.Chase:
             self.target_pos = self.behavior.get_target_position(pacman_pos, self.last_pacman_dir, self.get_position())
+            if self.color == "pink": print(f"pink target {self.target_pos}, at {self.x, self.y}")
         elif self.mode == self._modes.Frightened:
               self.target_pos = self.random_target()
         elif self.mode == self._modes.Eaten:
@@ -229,7 +231,7 @@ class Ghost(EntityInt, EntityMethods):
         for state, file_path in image_files:
             try:
                 image = pygame.image.load(file_path)
-                scaled_image = pygame.transform.scale(image, (36, 36))
+                scaled_image = pygame.transform.scale(image, settings.ENTITY_SIZE)
                 self.ghost_images[state] = scaled_image
             except pygame.error:
                 print(f"Error loading image: {file_path}")

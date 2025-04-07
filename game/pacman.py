@@ -29,7 +29,7 @@ class Pacman(EntityInt, EntityMethods):
         self.direction_command: Direction   = self.direction
         self.counter: int                   = 0
         self.turns: List[bool]              = [False, False, False, False]  # Ensure it's always initialized
-        self.lives: int = 3  # Pac-Man starts with 3 lives
+        self.lives: int                     = 3  # Pac-Man starts with 3 lives
 
         # Load Pac-Man images (animation frames)
         self.player_images: Dict[Direction, List[pygame.Surface]] = {
@@ -38,9 +38,11 @@ class Pacman(EntityInt, EntityMethods):
             Direction.UP: [],
             Direction.DOWN: [],
         }
+
+        pacman_size = settings.ENTITY_SIZE
         for i in range(1, 5):
             image = pygame.image.load(f'./assets/player_images/{i}.png')
-            scaled = pygame.transform.scale(image, (36, 36))
+            scaled = pygame.transform.scale(image, pacman_size)
 
             self.player_images[Direction.RIGHT].append(scaled)
             self.player_images[Direction.LEFT].append(pygame.transform.flip(scaled, True, False))

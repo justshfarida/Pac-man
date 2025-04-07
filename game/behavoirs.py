@@ -40,7 +40,7 @@ class Pinky(BehaviourInt):
             pacman_dir: Optional[Direction] = None,
             *args, **kwargs
     ) -> Position:
-        if self.last_pacman_dir != pacman_dir or self.target_pos is None:
+        if self.last_pacman_dir != pacman_dir or self.target_pos is None or 1:
             self.last_pacman_dir = pacman_dir
             self.target_pos = self._predict_pacman_position(
                 pacman_pos,
@@ -56,19 +56,25 @@ class Pinky(BehaviourInt):
             max_steps=4,
     ):
         dx, dy = direction_vectors.get(pacman_dir, (0, 0))
-        px, py = pacman_pos.x, pacman_pos.y
+        grid_x, grid_y = pacman_pos
 
         for steps in range(max_steps, 0, -1):
-            tx = px + dx * steps
-            ty = py + dy * steps
+            tx = grid_x + dx * steps
+            ty = grid_y + dy * steps
 
             # Bounds check
-            if 0 <= ty < len(self._maze.grid) and 0 <= tx < len(self._maze.grid[0]):
-                if (cell:=self._maze.grid[ty][tx] <= 3) or cell==9:
-                    return Position(tx, ty)
+            if (
+                    0 <= ty < len(self._maze.grid) and
+                    0 <= tx < len(self._maze.grid[0]) and
+                    (
+                            (cell := self._maze.grid[ty][tx] < 3) or
+                            cell == 9
+                    )
+            ):
+                return Position(tx, ty)
 
         # If all ahead tiles are walls or out-of-bounds, fallback to Pac-Man’s current tile
-        return Position(px, py)
+        return pacman_pos
 
 
 class Inky(BehaviourInt):

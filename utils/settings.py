@@ -7,9 +7,11 @@ class Settings:
     PI: float = math.pi
 
     #  Screen dimensions
-    TILE_LEN: int = 28
+    TILE_LEN: int = 32
     SCREEN_WIDTH: int = 30 * TILE_LEN
     SCREEN_HEIGHT: int = 32 * TILE_LEN + 50
+
+    PACMAN_SPEED: int = 3
 
 
 class Color:

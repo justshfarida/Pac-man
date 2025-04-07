@@ -11,7 +11,7 @@ class Settings:
     SCREEN_WIDTH: int = 30 * TILE_LEN
     SCREEN_HEIGHT: int = 32 * TILE_LEN + 50
 
-    PACMAN_SPEED: int = 3
+    PACMAN_SPEED: int = 4
 
 
 class Color:

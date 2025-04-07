@@ -38,7 +38,7 @@ class Pinky(BehaviourInt):
             self,
             pacman_pos: Position,
             pacman_dir: Optional[Direction] = None,
-            self_pos: Optional[Position] = None,
+            *args, **kwargs
     ) -> Position:
         if self.last_pacman_dir != pacman_dir or self.target_pos is None:
             self.last_pacman_dir = pacman_dir
@@ -64,11 +64,11 @@ class Pinky(BehaviourInt):
 
             # Bounds check
             if 0 <= ty < len(self._maze.grid) and 0 <= tx < len(self._maze.grid[0]):
-                if self._maze.grid[ty][tx] != 3:
-                    return (tx, ty)
+                if (cell:=self._maze.grid[ty][tx] <= 3) or cell==9:
+                    return Position(tx, ty)
 
         # If all ahead tiles are walls or out-of-bounds, fallback to Pac-Man’s current tile
-        return (px, py)
+        return Position(px, py)
 
 
 class Inky(BehaviourInt):
@@ -87,7 +87,7 @@ class Inky(BehaviourInt):
             self,
             pacman_pos: Position,
             pacman_dir: Optional[Direction] = None,
-            self_pos: Optional[Position] = None,
+            *args, **kwargs
     ):
         blinky_pos = self.__blinky.get_position()
         max_map_size = (30, 31)
@@ -110,9 +110,10 @@ class Inky(BehaviourInt):
         target_y = max(0, min(target_y, max_y - 1))
 
         #Make sure target is not a wall
-        if self._maze.grid[target_y][target_x] == 3:
+        if (cell:=self._maze.grid[target_y][target_x] >= 3 )and cell!=9:
             # fallback to a nearby walkable tile or Pac-Man
-            self.target_pos = Position(pacman_pos.x, pacman_pos.y)
+            self.target_pos = pacman_pos
+            return self.target_pos
 
         self.target_pos = Position(target_x, target_y)
 

@@ -24,7 +24,7 @@ class Pacman(EntityInt, EntityMethods):
         self.set_position(starting_position)
 
         self.maze: Maze                     = maze
-        self.speed: int                     = 4 # TODO: There is a bug when odd number used as speed
+        self.speed: int                     = 2 # TODO: There is a bug when odd number used as speed
         self.direction: Direction           = Direction.RIGHT
         self.direction_command: Direction   = self.direction
         self.counter: int                   = 0

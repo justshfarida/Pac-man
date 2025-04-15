@@ -95,9 +95,59 @@ class Game:
 
     def display_game_over(self):
         game_over_text = self.font.render("GAME OVER", True, (255, 0, 0))  # Red color
-        text_rect = game_over_text.get_rect(center=(settings.SCREEN_WIDTH // 2, settings.SCREEN_HEIGHT // 2))
+        text_rect = game_over_text.get_rect(center=(settings.SCREEN_WIDTH // 2, settings.SCREEN_HEIGHT // 3))
         self.screen.blit(game_over_text, text_rect)
 
+        restart_text = self.font.render("Play Again? Y/N", True, (255, 255, 255))  # White color
+        restart_rect = restart_text.get_rect(center=(settings.SCREEN_WIDTH // 2, settings.SCREEN_HEIGHT // 2))
+        self.screen.blit(restart_text, restart_rect)
+    def restart_game(self):
+    # Reset all game variables and objects
+        self.pacman = Pacman(starting_position=Position(16, 24), maze=self.maze)
+        self.ghosts = [
+            blinky := Ghost(
+                start_pos=Position(14, 15),
+                color="red",
+                pathfinding_algorithm=AStar,
+                behavior=Blinky(),
+                maze=self.maze,
+                game=self
+            ),  # Blinky
+            Ghost(
+                start_pos=Position(14, 16),
+                color="pink",
+                pathfinding_algorithm=AStar,
+                behavior=Pinky(self.maze),
+                maze=self.maze,
+                game=self,
+            ),  # Pinky (BFS)
+            Ghost(
+                start_pos=Position(12, 14),
+                color="blue",
+                pathfinding_algorithm=AStar,
+                behavior=Inky(maze=self.maze, blinky=blinky),
+                maze=self.maze,
+                game=self
+            ),  # Inky (DFS)
+            Ghost(
+                start_pos=Position(16, 14),
+                color="orange",
+                pathfinding_algorithm=AStar,
+                behavior=Clyde(),
+                maze=self.maze,
+                game=self,
+            ),  # Clyde
+        ]
+        self.score = 0
+        self.power = False
+        self.power_count = 0
+        self.eaten_ghosts = [False, False, False, False]
+
+        # Reset maze grid to its initial state
+        self.maze = Maze()  # Reinitialize the maze to reset the grid
+
+        # Reset ghosts' positions
+        self.reset_ghosts()
     def reset_ghosts(self):
         for ghost in self.ghosts:
             ghost.reset()
@@ -183,9 +233,27 @@ class Game:
             
             if self.pacman.check_game_over():
                 self.display_game_over()  # Display "GAME OVER"
-                pygame.display.flip()  # Update the screen to show the new text
-                pygame.time.wait(3000)  # Optional: wait for 3 seconds before closing (adjust time as needed)
-                break  # Stop the game loop
+                print("meow")
+                pygame.display.flip()
+                waiting_input=True
+                while(waiting_input):
+                    for event in pygame.event.get():
+                        print(f"{event.type}")
+                        if event.type==pygame.KEYDOWN:
+                        
+                            if event.key==pygame.K_y:
+                                print(f"{event.key} pressed")
+                                
+                                self.restart_game()
+                                waiting_input=False
+                            elif event.key==pygame.K_n:
+                                print(f"{event.key} pressed")
+                                self.running=False
+                                waiting_input=False
+
+
+                
+                # pygame.time.wait(3000)  # Optional: wait for 3 seconds before closing (adjust time as needed)
             # Check for pellet and power pellet collisions
             
 

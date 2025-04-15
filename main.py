@@ -92,7 +92,16 @@ class Game:
         self.power = False
         self.power_count = 0
         self.eaten_ghosts = [False, False, False, False]
+    def check_victory(self):
+        return self.score==2620
+    def display_win(self):
+        game_over_text = self.font.render("PACMAN WON!", True, (255, 0, 0))  # Red color
+        text_rect = game_over_text.get_rect(center=(settings.SCREEN_WIDTH // 2, settings.SCREEN_HEIGHT // 3))
+        self.screen.blit(game_over_text, text_rect)
 
+        restart_text = self.font.render("Play Again? Y/N", True, (255, 255, 255))  # White color
+        restart_rect = restart_text.get_rect(center=(settings.SCREEN_WIDTH // 2, settings.SCREEN_HEIGHT // 2))
+        self.screen.blit(restart_text, restart_rect)
     def display_game_over(self):
         game_over_text = self.font.render("GAME OVER", True, (255, 0, 0))  # Red color
         text_rect = game_over_text.get_rect(center=(settings.SCREEN_WIDTH // 2, settings.SCREEN_HEIGHT // 3))
@@ -156,7 +165,7 @@ class Game:
 
     def draw_misc(self) -> None:
         score_text = self.font.render(f"Score {self.score}", True, 'white')
-        self.screen.blit(score_text, (10, 920))
+        self.screen.blit(score_text, (10, 800))
 
     def check_collisions(self) -> None:
         """Checks if Pac-Man eats a pellet or power pellet and updates game state."""
@@ -230,9 +239,13 @@ class Game:
                 if elapsed_time > 10000:  # 10 seconds
                     self.deactivate_frightened_mode()
 
+            self.check_victory()
             
-            if self.pacman.check_game_over():
-                self.display_game_over()  # Display "GAME OVER"
+            if self.pacman.check_game_over() or self.check_victory():
+                if self.pacman.check_game_over():
+                    self.display_game_over()  # Display "GAME OVER"
+                elif self.check_victory():
+                    self.display_win()
                 print("meow")
                 pygame.display.flip()
                 waiting_input=True
